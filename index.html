@@ -3,64 +3,34 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>科大守卫战 - Web 完整版</title>
+  <title>科大守卫战 - 沉浸重制版</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main class="app">
-    <section class="stage">
-      <canvas id="game" width="1180" height="720" aria-label="科大守卫战游戏画布"></canvas>
-      <div id="buildPanel" class="build-panel hidden"></div>
-      <div id="overlay" class="overlay hidden"></div>
-    </section>
-    <aside class="side">
-      <header>
-        <p class="eyebrow">USTC Roguelike Tower Defense</p>
-        <h1>科大守卫战</h1>
-        <p id="notice" class="notice">局外成长：结算获得学分，可解锁新塔、选择天赋和芯片。</p>
-      </header>
+  <main class="game-container">
+    <section class="viewport">
+      <canvas id="game" width="1180" height="720"></canvas>
 
-      <div class="actions">
-        <button id="startBtn">开始游戏</button>
-        <button id="growthBtn">局外成长</button>
-        <button id="menuBtn">主菜单</button>
-        <button id="pauseBtn">暂停</button>
-        <button id="restartBtn">重开</button>
-        <button id="resetSaveBtn" class="secondary">重置存档</button>
+      <div id="hud" class="hud-bar hidden">
+        <div class="hud-item"><span class="icon">❤️</span><strong id="life">20</strong></div>
+        <div class="hud-item"><span class="icon">⚡</span><strong id="resource">120</strong></div>
+        <div class="hud-item"><span class="icon">🌊</span><strong id="wave">0/10</strong></div>
+        <div class="hud-item"><span class="icon">🎯</span><strong id="kills">0</strong></div>
+        <div class="hud-item"><span class="icon">🏆</span><strong id="score">0</strong></div>
+        <div class="hud-item"><span class="icon">🎓</span><strong id="credits">0</strong></div>
+        <button id="pauseBtn" class="hud-btn">暂停 (Space)</button>
+        <button id="abortBtn" class="hud-btn danger">撤退</button>
       </div>
 
-      <section>
-        <h2>地图</h2>
-        <div id="mapList" class="map-list"></div>
-      </section>
+      <div id="screenOverlay" class="screen-overlay"></div>
 
-      <section>
-        <h2>战斗状态</h2>
-        <div class="stats">
-          <div><span>生命</span><strong id="life">20</strong></div>
-          <div><span>资源</span><strong id="resource">120</strong></div>
-          <div><span>波次</span><strong id="wave">0/10</strong></div>
-          <div><span>击败</span><strong id="kills">0</strong></div>
-          <div><span>得分</span><strong id="score">0</strong></div>
-          <div><span>学分</span><strong id="credits">0</strong></div>
-        </div>
-      </section>
+      <div id="buildPanel" class="build-bubble hidden"></div>
 
-      <section>
-        <h2>局外加成</h2>
-        <div id="growthPanel" class="growth-panel"></div>
-      </section>
-
-      <section>
-        <h2>强化记录</h2>
-        <ul id="mods"></ul>
-      </section>
-
-      <section>
-        <h2>最近战绩</h2>
-        <div id="history" class="history"></div>
-      </section>
-    </aside>
+      <div id="hotbar" class="hotbar-panel hidden">
+        <div class="hotbar-title">防线部署 (快捷键: 1-4)</div>
+        <div class="hotbar-slots"></div>
+      </div>
+    </section>
   </main>
   <script src="game.js"></script>
 </body>
