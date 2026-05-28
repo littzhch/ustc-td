@@ -5,6 +5,8 @@ let difficultyKey = save.difficulty in DIFFICULTIES ? save.difficulty : "confide
 let state = { mode: "menu" };
 let hotKeySelectedTower = null;
 let inspectedTowerKind = null;
+let growthBranchKey = save.selectedResearchBranch || "survival";
+let growthSelectedNodeId = null;
 
 function repeat(value, count) {
   return Array.from({ length: count }, () => value);
@@ -23,6 +25,17 @@ function loadSave() {
   }
   const credits = Number(loaded.credits);
   const baseUnlocks = ["math", "physics", "lab", "coffee"];
+  const research = {};
+  if (loaded.research && typeof loaded.research === "object") {
+    for (const [id, level] of Object.entries(loaded.research)) {
+      const node = RESEARCH_NODE_MAP[id];
+      const value = Math.trunc(Number(level));
+      if (node && Number.isFinite(value) && value > 0) research[id] = Math.min(value, node.max || 1);
+    }
+  }
+  const selectedResearchBranch = RESEARCH_BRANCHES.some(branch => branch.key === loaded.selectedResearchBranch)
+    ? loaded.selectedResearchBranch
+    : "survival";
   return {
     history: Array.isArray(loaded.history) ? loaded.history : [],
     bestWave: Number.isFinite(Number(loaded.bestWave)) ? Math.trunc(Number(loaded.bestWave)) : 0,
@@ -32,11 +45,49 @@ function loadSave() {
     chip: loaded.chip in CHIPS ? loaded.chip : "none",
     chips: Array.isArray(loaded.chips) ? loaded.chips.filter(key => key in CHIPS && key !== "none") : [],
     difficulty: loaded.difficulty in DIFFICULTIES ? loaded.difficulty : "confidential",
+    research,
+    selectedResearchBranch,
   };
 }
 
 function writeSave() {
   localStorage.setItem(SAVE_KEY, JSON.stringify(save));
+}
+
+function researchLevel(id) {
+  const node = RESEARCH_NODE_MAP[id];
+  if (!node) return 0;
+  return Math.max(0, Math.min(node.max || 1, Math.trunc(Number(save.research?.[id]) || 0)));
+}
+
+function hasResearch(id) {
+  return researchLevel(id) > 0;
+}
+
+function researchCost(id) {
+  const node = RESEARCH_NODE_MAP[id];
+  const level = researchLevel(id);
+  if (!node || level >= (node.max || 1)) return Infinity;
+  return node.costs[level] || node.cost || Infinity;
+}
+
+function researchPrereqsMet(node) {
+  return (node.requires || []).every(id => hasResearch(id));
+}
+
+function researchUnlockedCount() {
+  return Object.values(save.research || {}).reduce((sum, level) => sum + Math.max(0, Math.trunc(Number(level) || 0)), 0);
+}
+
+function customSlotCost() {
+  return Math.max(15, CUSTOM_SLOT_COST - researchLevel("campus_planning") * 5);
+}
+
+function towerBuildCost(kind, slot = null) {
+  let cost = TOWERS[kind]?.cost || 0;
+  if (kind === "coffee" && slot?.source === "食堂" && hasResearch("canteen_subsidy")) cost *= 0.8;
+  cost *= state.mods?.buildCostScale || 1;
+  return Math.max(1, Math.trunc(cost));
 }
 
 function loadRunSave() {
@@ -64,6 +115,7 @@ function sanitizeSlotForSave(slot) {
       kind: slot.tower.kind,
       x: slot.tower.x,
       y: slot.tower.y,
+      source: slot.tower.source || slot.source || null,
       level: slot.tower.level,
       spent: slot.tower.spent,
       cooldownLeft: slot.tower.cooldownLeft || 0,
@@ -145,6 +197,7 @@ function restoreSlotFromSave(slot) {
       ...slot.tower,
       x: slot.x,
       y: slot.y,
+      source: slot.tower.source || slot.source || null,
       bonus: slot.tower.bonus || bonus || null,
     };
   }
@@ -197,6 +250,10 @@ function resetRun() {
   const difficulty = DIFFICULTIES[difficultyKey] || DIFFICULTIES.confidential;
   map.routes = buildSpawnRoutes(map);
   map.path = map.routes[0] || [map.spawns?.[0] || [WIDTH - 24, HEIGHT / 2], map.target];
+  const startResource = 120
+    + researchLevel("freshman_pack") * 20
+    + (hasResearch("prestudy") ? 30 : 0)
+    + difficulty.startResource;
   const run = {
     mode: "running",
     map,
@@ -210,8 +267,9 @@ function resetRun() {
     projectiles: [],
     effects: [],
     floating: [],
-    life: GPA_MAX,
-    resources: (save.talent === "starter" ? 145 : 120) + difficulty.startResource,
+    life: GPA_MAX + researchLevel("gpa_buffer") * 2,
+    maxLife: GPA_MAX + researchLevel("gpa_buffer") * 2,
+    resources: startResource,
     wave: 0,
     maxWaves: difficulty.endless ? Infinity : WAVE_TABLE.length,
     kills: 0,
@@ -226,14 +284,65 @@ function resetRun() {
     pendingEnhancement: false,
     introTime: 3.6,
     selectedSlot: null,
-    mods: { damage: 1, speed: 1, range: 1, killBonus: 0, globalSlow: 0 },
+    mods: {
+      damage: 1,
+      speed: 1,
+      range: 1,
+      killBonus: 0,
+      globalSlow: 0,
+      mathDamage: 1 + researchLevel("math_tutoring") * 0.05,
+      mathBossDamage: hasResearch("formula_burst") ? 1.16 : 1,
+      physicsSpeed: 1 + researchLevel("physics_team") * 0.06,
+      physicsDoubleChance: hasResearch("quantum_clicker") ? 0.18 : 0,
+      labSplashBonus: researchLevel("lab_safety") * 8,
+      coffeeIncome: 1 + researchLevel("coffee_refill") * 0.2,
+      coffeeAura: hasResearch("all_nighter") ? 0.08 : 0,
+    },
     chosenMods: [],
     choices: [],
     resultSaved: false,
     lastCredits: 0,
+    firstLeakShieldUsed: false,
+    lowGpaBoostUsed: false,
+    lowGpaBoostUntil: 0,
+    starcloudHelpUsed: false,
+    starcloudSlowUntil: 0,
+    firstDdlBlastForgiven: false,
+    ddlAutoSlowWave: 0,
+    enhancementRerolls: hasResearch("reroll_project") ? 1 : 0,
+    goldenSlotIndex: -1,
   };
-  if (save.chip === "amp") run.mods.damage += 0.08;
-  if (save.chip === "clock") run.mods.speed += 0.08;
-  if (save.chip === "survey") run.mods.range += 0.08;
+  applyGoldenSeat(run);
+  applyBlindBox(run);
   return run;
+}
+
+function applyGoldenSeat(run) {
+  if (!hasResearch("golden_seat") || !run.slots.length) return;
+  const candidates = run.slots.filter(slot => !slot.tower);
+  if (!candidates.length) return;
+  const slot = candidates[Math.floor(Math.random() * candidates.length)];
+  slot.bonus = {
+    name: "黄金自习位",
+    desc: "伤害 +8%，攻速 +8%，射程 +8%",
+    damage: 1.08,
+    speed: 1.08,
+    range: 1.08,
+    color: "#fbbf24",
+  };
+  slot.golden = true;
+  run.goldenSlotIndex = run.slots.indexOf(slot);
+}
+
+function applyBlindBox(run) {
+  if (!hasResearch("blind_box")) return;
+  const picks = [
+    ["盲盒：输出论文", () => run.mods.damage += 0.05],
+    ["盲盒：信号放大", () => run.mods.range += 0.05],
+    ["盲盒：运算加速", () => run.mods.speed += 0.05],
+    ["盲盒：启动经费", () => run.resources += 35],
+  ];
+  const [label, action] = picks[Math.floor(Math.random() * picks.length)];
+  action();
+  run.chosenMods.push(label);
 }

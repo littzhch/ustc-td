@@ -35,6 +35,45 @@ const CAMPUS_BLOCKERS = [
   { kind: "rect", x: 404, y: 266, w: 150, h: 92 },
 ];
 
+const GAOXIN_BUILDINGS = [
+  { kind: "building", x: 222, y: 72, w: 250, h: 108, color: "#c9553d", label: "3号学科楼" },
+  { kind: "building", x: 168, y: 270, w: 190, h: 108, color: "#d9e1de", label: "图书教育中心" },
+  { kind: "office", x: 960, y: 172, w: 104, h: 58, label: "教务处" },
+  { kind: "building", x: 732, y: 160, w: 150, h: 82, color: "#d8e2df", label: "师生活动中心" },
+  { kind: "building", x: 914, y: 316, w: 142, h: 76, color: "#e7e3d7", label: "学生食堂" },
+  { kind: "building", x: 944, y: 456, w: 104, h: 120, color: "#e8eceb", label: "5号学生公寓" },
+  { kind: "building", x: 606, y: 486, w: 216, h: 76, color: "#c85f46", label: "体育馆" },
+  { kind: "building", x: 52, y: 482, w: 142, h: 88, color: "#d55c42", label: "人才公寓" },
+  { kind: "building", x: 76, y: 620, w: 166, h: 70, color: "#d7ded9", label: "教工食堂" },
+];
+
+const GAOXIN_BLOCKERS = [
+  { kind: "circle", x: 482, y: 392, r: 108 },
+  { kind: "circle", x: 556, y: 478, r: 118 },
+  { kind: "circle", x: 430, y: 528, r: 82 },
+  { kind: "rect", x: 372, y: 332, w: 278, h: 244 },
+];
+
+const WEST_BUILDINGS = [
+  { kind: "building", x: 898, y: 256, w: 150, h: 118, color: "#d7d2bd", label: "图书馆" },
+  { kind: "building", x: 430, y: 52, w: 224, h: 82, color: "#d7ded9", label: "学生公寓" },
+  { kind: "building", x: 250, y: 72, w: 142, h: 70, color: "#dfd8c7", label: "食堂" },
+  { kind: "building", x: 58, y: 180, w: 172, h: 82, color: "#dcd8c8", label: "西区学生生活动中心" },
+  { kind: "building", x: 70, y: 324, w: 160, h: 94, color: "#c86a48", label: "特种实验楼" },
+  { kind: "building", x: 252, y: 556, w: 172, h: 72, color: "#d9d3c3", label: "教三楼" },
+  { kind: "building", x: 456, y: 574, w: 176, h: 68, color: "#d4e0dc", label: "电三楼" },
+  { kind: "building", x: 700, y: 524, w: 220, h: 82, color: "#d6cfba", label: "力一楼" },
+];
+
+const WEST_TOWER_BUILDINGS = WEST_BUILDINGS.filter(building => !["图书馆", "电三楼"].includes(building.label));
+
+const WEST_BLOCKERS = [
+  { kind: "circle", x: 486, y: 330, r: 102 },
+  { kind: "circle", x: 620, y: 372, r: 126 },
+  { kind: "circle", x: 492, y: 470, r: 90 },
+  { kind: "rect", x: 392, y: 266, w: 318, h: 220 },
+];
+
 const SLOT_BONUSES = {
   "图书馆": { name: "图书馆馆藏", desc: "射程 +12%", range: 1.12, color: "#2f6be8" },
   "行政楼": { name: "行政调度", desc: "攻速 +10%", speed: 1.1, color: "#b64d3f" },
@@ -46,11 +85,28 @@ const SLOT_BONUSES = {
   "校史馆": { name: "校史鼓舞", desc: "伤害 +6%，攻速 +6%", damage: 1.06, speed: 1.06, color: "#55714b" },
   "中科大星": { name: "中科大星", desc: "伤害 +10%，射程 +10%", damage: 1.1, range: 1.1, color: "#d7b83f" },
   "郭沫若像": { name: "郭沫若像", desc: "攻速 +8%，射程 +8%", speed: 1.08, range: 1.08, color: "#8a6a42" },
+  "3号学科楼": { name: "高新学科群", desc: "伤害 +10%，攻速 +4%", damage: 1.1, speed: 1.04, color: "#c9553d" },
+  "图书教育中心": { name: "图教检索", desc: "射程 +10%，伤害 +5%", range: 1.1, damage: 1.05, color: "#2f6be8" },
+  "师生活动中心": { name: "活动中心调度", desc: "攻速 +12%", speed: 1.12, color: "#2f7d68" },
+  "学生食堂": { name: "高新食堂补给", desc: "咖啡塔收益 +45%", income: 1.45, color: "#c88022" },
+  "5号学生公寓": { name: "宿舍熬夜灯", desc: "攻速 +8%，射程 +5%", speed: 1.08, range: 1.05, color: "#7d66aa" },
+  "体育馆": { name: "体测爆发", desc: "伤害 +8%，攻速 +8%", damage: 1.08, speed: 1.08, color: "#2f7d4f" },
+  "人才公寓": { name: "人才引进", desc: "伤害 +12%", damage: 1.12, color: "#c9553d" },
+  "教工食堂": { name: "教工餐补", desc: "咖啡塔收益 +35%，射程 +4%", income: 1.35, range: 1.04, color: "#c88022" },
+  "思佩桥": { name: "思佩桥瓶颈", desc: "射程 +16%，伤害 +6%", range: 1.16, damage: 1.06, color: "#38bdf8" },
+  "学生公寓": { name: "宿舍熬夜灯", desc: "攻速 +8%，射程 +5%", speed: 1.08, range: 1.05, color: "#7d66aa" },
+  "西区学生生活动中心": { name: "活动中心调度", desc: "攻速 +12%", speed: 1.12, color: "#2f7d68" },
+  "特种实验楼": { name: "实验楼溅射", desc: "伤害 +8%，射程 +6%", damage: 1.08, range: 1.06, color: "#c9553d" },
+  "教三楼": { name: "教三讲台", desc: "伤害 +6%，射程 +8%", damage: 1.06, range: 1.08, color: "#b96f42" },
+  "电三楼": { name: "电三超频", desc: "攻速 +12%", speed: 1.12, color: "#2f7d68" },
+  "力一楼": { name: "力一推导", desc: "伤害 +12%", damage: 1.12, color: "#c66a3d" },
+  "芦花映雪": { name: "芦花映雪", desc: "射程 +14%", range: 1.14, color: "#38bdf8" },
+  "严济慈铜像": { name: "严济慈铜像", desc: "伤害 +8%，攻速 +8%", damage: 1.08, speed: 1.08, color: "#8a6a42" },
 };
 
-function buildTowerSlots() {
+function buildTowerSlots(buildings = CAMPUS_BUILDINGS, extraSlots = []) {
   const slots = [];
-  for (const building of CAMPUS_BUILDINGS) {
+  for (const building of buildings) {
     const { x, y, w, h } = building;
     const candidates = [
       [x + w * 0.5, y + h * 0.48],
@@ -68,7 +124,9 @@ function buildTowerSlots() {
       placed += 1;
     }
   }
-  addLandmarkTowerSlots(slots);
+  for (const { point, source, landmark = true } of extraSlots) {
+    if (isValidLandmarkSlot(point, slots)) slots.push(makeTowerSlot(point, source, landmark));
+  }
   return slots;
 }
 
@@ -130,19 +188,85 @@ const MAPS = [
       [42, 720],
     ],
     path: [],
-    slots: buildTowerSlots(),
+    buildings: CAMPUS_BUILDINGS,
+    blockers: CAMPUS_BLOCKERS,
+    slots: buildTowerSlots(CAMPUS_BUILDINGS, [
+      { point: [512, 355], source: "中科大星" },
+      { point: [552, 238], source: "郭沫若像" },
+      { point: [472, 352], source: "中科大星" },
+      { point: [594, 252], source: "郭沫若像" },
+    ]),
   },
   {
-    name: "图书馆长廊", subtitle: "后续开放：书架之间的 DDL 潮汐", accent: "#34d399", locked: true, preview: "建设中",
-    landmarks: [["西区图书馆", 200, 140], ["少年班学院", 600, 120], ["自习区", 700, 580]],
-    path: [[40, 240], [260, 240], [260, 560], [500, 560], [500, 180], [780, 180], [780, 440], [1140, 440]],
-    slots: [[150, 160], [160, 360], [340, 480], [400, 280], [620, 120], [640, 340], [860, 280], [900, 540]],
+    name: "高新校区", subtitle: "永怀湖两岸防线，思佩桥是左右侧怪潮汇合的唯一通道", accent: "#38bdf8", preview: "已接入",
+    style: "gaoxin",
+    landmarks: [["3号学科楼", 347, 114], ["图书教育中心", 263, 308], ["高新教务处", 1012, 210], ["师生活动中心", 808, 202], ["永怀湖", 500, 488], ["学生食堂", 985, 358], ["5号学生公寓", 996, 500], ["体育馆", 714, 524], ["人才公寓", 123, 524]],
+    target: [1012, 210],
+    spawns: [
+      [0, 232],
+      [0, 420],
+      [0, 610],
+    ],
+    routes: [
+      [[0, 232], [0, 420], [282, 420], [536, 420], [760, 420], [850, 360], [884, 312], [944, 282], [1008, 240], [1012, 210]],
+      [[0, 420], [282, 420], [536, 420], [760, 420], [850, 360], [884, 312], [944, 282], [1008, 240], [1012, 210]],
+      [[0, 610], [260, 590], [316, 540], [316, 420], [536, 420], [760, 420], [850, 360], [884, 312], [944, 282], [1008, 240], [1012, 210]],
+      [[0, 232], [160, 236], [340, 236], [540, 252], [720, 318], [850, 300], [944, 282], [1008, 240], [1012, 210]],
+      [[0, 610], [180, 594], [340, 608], [520, 624], [720, 620], [862, 610], [900, 540], [900, 420], [884, 340], [896, 292], [944, 282], [1008, 240], [1012, 210]],
+    ],
+    routeWeights: [4, 4, 4, 1, 1],
+    choke: [536, 420],
+    passages: [
+      { kind: "rect", x: 316, y: 388, w: 444, h: 68 },
+      { kind: "circle", x: 536, y: 420, r: 58 },
+    ],
+    path: [],
+    buildings: GAOXIN_BUILDINGS,
+    blockers: GAOXIN_BLOCKERS,
+    slots: buildTowerSlots(GAOXIN_BUILDINGS, [
+      { point: [338, 378], source: "思佩桥" },
+      { point: [540, 374], source: "思佩桥" },
+      { point: [732, 382], source: "思佩桥" },
+      { point: [404, 294], source: "图书教育中心" },
+      { point: [792, 298], source: "师生活动中心" },
+    ]),
   },
   {
-    name: "东区一教", subtitle: "后续开放：从教学楼迷雾到校园核心", accent: "#a78bfa", locked: true, preview: "建设中",
-    landmarks: [["郭沫若广场", 345, 110], ["瀚海星云", 780, 115], ["宿舍区", 760, 590]],
-    path: [[40, 540], [210, 540], [210, 330], [380, 330], [380, 470], [620, 470], [620, 230], [860, 230], [860, 390], [1140, 390]],
-    slots: [[130, 450], [250, 230], [330, 590], [480, 365], [540, 150], [700, 340], [760, 520], [960, 300]],
+    name: "也西湖", subtitle: "西区环湖三线防守，南侧教学区与湖畔卡点共同收束到图书馆", accent: "#0ea5b7", preview: "已接入",
+    style: "west",
+    landmarks: [["西区北门", 1030, 34], ["学生公寓", 434, 150], ["食堂", 268, 158], ["西区学生生活动中心", 144, 220], ["特种实验楼", 150, 372], ["也西湖", 552, 384], ["芦花映雪", 814, 360], ["严济慈铜像", 382, 524], ["教三楼", 338, 592], ["电三楼", 544, 610], ["力一楼", 810, 564], ["图书馆", 974, 314]],
+    target: [976, 316],
+    spawns: [
+      [1138, 8],
+      [0, 294],
+      [132, 684],
+    ],
+    routes: [
+      [[1138, 8], [1000, 36], [780, 52], [704, 114], [724, 194], [828, 236], [910, 274], [976, 316]],
+      [[0, 294], [232, 292], [322, 328], [350, 420], [438, 512], [612, 522], [774, 478], [862, 394], [914, 346], [976, 316]],
+      [[132, 684], [246, 650], [446, 658], [648, 638], [806, 584], [850, 500], [854, 414], [914, 346], [976, 316]],
+      [[0, 294], [132, 210], [254, 188], [330, 250], [348, 366], [438, 512], [612, 522], [774, 478], [862, 394], [914, 346], [976, 316]],
+      [[132, 684], [232, 604], [386, 566], [612, 522], [742, 432], [822, 358], [914, 346], [976, 316]],
+    ],
+    routeWeights: [4, 4, 4, 1, 1],
+    choke: [862, 394],
+    passages: [
+      { kind: "circle", x: 862, y: 394, r: 58 },
+      { kind: "rect", x: 790, y: 350, w: 150, h: 92 },
+    ],
+    path: [],
+    buildings: WEST_BUILDINGS,
+    blockers: WEST_BLOCKERS,
+    slots: buildTowerSlots(WEST_TOWER_BUILDINGS, [
+      { point: [932, 292], source: "图书馆", landmark: false },
+      { point: [1018, 346], source: "图书馆", landmark: false },
+      { point: [812, 388], source: "芦花映雪" },
+      { point: [382, 512], source: "严济慈铜像" },
+      { point: [760, 452], source: "芦花映雪" },
+      { point: [358, 476], source: "严济慈铜像" },
+      { point: [506, 590], source: "电三楼", landmark: false },
+      { point: [584, 590], source: "电三楼", landmark: false },
+    ]),
   },
 ];
 
@@ -163,6 +287,110 @@ const CHIPS = {
   clock: ["超频时钟芯片", "防御塔攻击速率加快 8%", 80],
   survey: ["量子测绘芯片", "防御塔攻击信道范围扩大 8%", 80],
 };
+
+const RESEARCH_BRANCHES = [
+  {
+    key: "survival",
+    title: "本科生求生手册",
+    motto: "先别挂科，别的都能再说。",
+    accent: "#34d399",
+    nodes: [
+      { id: "freshman_pack", name: "新生礼包", icon: "包", x: 8, y: 48, max: 3, costs: [35, 70, 115], desc: "初始资源每级 +20。" },
+      { id: "gpa_buffer", name: "绩点缓冲", icon: "绩", x: 22, y: 28, max: 3, costs: [45, 90, 145], requires: ["freshman_pack"], desc: "最大 GPA 每级 +0.2。" },
+      { id: "prestudy", name: "预习三分钟", icon: "预", x: 22, y: 68, max: 1, costs: [95], requires: ["freshman_pack"], desc: "每局开始时额外获得 30 资源。" },
+      { id: "office_firewall", name: "教务处防火墙", icon: "盾", x: 42, y: 48, max: 1, costs: [135], requires: ["gpa_buffer", "prestudy"], desc: "每局第一次怪物冲进教务处时，GPA 伤害降低 50%。" },
+      { id: "dont_fail", name: "稳住别挂科", icon: "稳", x: 62, y: 28, max: 1, costs: [160], requires: ["office_firewall"], desc: "GPA 低于 1.0 时，全塔攻速短暂提高 18%，每局一次。" },
+      { id: "scholarship_edge", name: "保研边缘人", icon: "奖", x: 62, y: 68, max: 2, costs: [150, 230], requires: ["office_firewall"], desc: "通关奖励学分每级 +10%。" },
+      { id: "final_review", name: "期末复盘", icon: "复", x: 82, y: 48, max: 1, costs: [260], requires: ["dont_fail", "scholarship_edge"], desc: "守卫成功时，如果 GPA 大于 3.0，额外获得 60 学分。" },
+    ],
+  },
+  {
+    key: "tower",
+    title: "塔防课题组",
+    motto: "把每座塔都培养成离谱方向的专家。",
+    accent: "#38bdf8",
+    nodes: [
+      { id: "math_tutoring", name: "高数补课", icon: "∫", x: 7, y: 35, max: 3, costs: [45, 90, 150], desc: "高数塔伤害每级 +5%。" },
+      { id: "formula_burst", name: "偏科战神", icon: "爆", x: 25, y: 20, max: 1, costs: [150], requires: ["math_tutoring"], desc: "高数塔对 Boss 额外造成 16% 伤害。" },
+      { id: "physics_team", name: "物理竞赛队", icon: "Φ", x: 25, y: 50, max: 2, costs: [55, 120], requires: ["math_tutoring"], desc: "物理塔攻速每级 +6%。" },
+      { id: "quantum_clicker", name: "量子连点器", icon: "连", x: 43, y: 50, max: 1, costs: [180], requires: ["physics_team"], desc: "物理塔有 18% 概率额外打出一次伤害。" },
+      { id: "lab_safety", name: "实验室安全规范", icon: "◇", x: 43, y: 78, max: 2, costs: [65, 135], requires: ["physics_team"], desc: "实验塔溅射范围每级 +8。" },
+      { id: "danger_reagent", name: "实验事故", icon: "危", x: 61, y: 78, max: 1, costs: [210], requires: ["lab_safety"], desc: "实验塔击杀敌人时，额外获得 8 资源。" },
+      { id: "coffee_refill", name: "咖啡续杯", icon: "C", x: 61, y: 30, max: 2, costs: [60, 130], requires: ["quantum_clicker"], desc: "咖啡塔产出每级 +20%。" },
+      { id: "all_nighter", name: "通宵自习室", icon: "夜", x: 82, y: 50, max: 1, costs: [260], requires: ["coffee_refill", "danger_reagent"], desc: "咖啡塔附近的其他塔攻速 +8%。" },
+    ],
+  },
+  {
+    key: "campus",
+    title: "校园地形学",
+    motto: "不是乱摆塔，是严谨的校园风水学。",
+    accent: "#fbbf24",
+    nodes: [
+      { id: "library_seat", name: "图书馆占座", icon: "书", x: 8, y: 26, max: 2, costs: [40, 95], desc: "图书馆部署点射程加成每级额外 +4%。" },
+      { id: "admin_stamp", name: "行政楼盖章", icon: "章", x: 8, y: 66, max: 2, costs: [40, 95], desc: "行政楼部署点攻速加成每级额外 +4%。" },
+      { id: "canteen_subsidy", name: "食堂补贴", icon: "饭", x: 28, y: 18, max: 1, costs: [110], requires: ["library_seat"], desc: "在食堂部署咖啡塔时，建造费用 -20%。" },
+      { id: "teacher_course", name: "一教授课", icon: "教", x: 28, y: 48, max: 2, costs: [50, 110], requires: ["library_seat", "admin_stamp"], desc: "第一教学楼部署点伤害加成每级额外 +4%。" },
+      { id: "museum_spirit", name: "校史馆精神", icon: "史", x: 28, y: 78, max: 1, costs: [120], requires: ["admin_stamp"], desc: "校史馆部署点伤害、攻速加成额外 +5%。" },
+      { id: "star_calibration", name: "中科大星校准", icon: "星", x: 52, y: 34, max: 1, costs: [180], requires: ["teacher_course"], desc: "中科大星部署点伤害与射程额外 +5%。" },
+      { id: "campus_planning", name: "校园规划办", icon: "规", x: 52, y: 68, max: 2, costs: [90, 170], requires: ["museum_spirit"], desc: "新增临时部署点费用每级 -5。" },
+      { id: "golden_seat", name: "黄金自习位", icon: "金", x: 78, y: 50, max: 1, costs: [260], requires: ["star_calibration", "campus_planning"], desc: "每局随机一个空部署点变为黄金点位，获得混合加成。" },
+    ],
+  },
+  {
+    key: "deadline",
+    title: "DDL 应急管理",
+    motto: "让死线也学会排队。",
+    accent: "#f43f5e",
+    nodes: [
+      { id: "deadline_radar", name: "死线雷达", icon: "警", x: 8, y: 48, max: 1, costs: [50], desc: "击杀 DDL 怪获得的资源 +4。" },
+      { id: "alarm_clock", name: "早八闹钟", icon: "钟", x: 25, y: 28, max: 2, costs: [70, 140], requires: ["deadline_radar"], desc: "DDL 怪自爆倒计时每级 +0.5 秒。" },
+      { id: "ta_intercept", name: "助教拦截", icon: "助", x: 25, y: 68, max: 1, costs: [120], requires: ["deadline_radar"], desc: "被减速的 DDL 怪受到 15% 额外伤害。" },
+      { id: "emergency_review", name: "紧急撤稿", icon: "撤", x: 45, y: 28, max: 2, costs: [110, 190], requires: ["alarm_clock"], desc: "塔被 DDL 降级时，每级有 18% 概率免疫。" },
+      { id: "crisis_pr", name: "危机公关", icon: "公", x: 45, y: 68, max: 2, costs: [95, 170], requires: ["ta_intercept"], desc: "击杀 DDL 怪恢复 GPA 每级 +0.03。" },
+      { id: "reverse_delay", name: "反向延期", icon: "延", x: 65, y: 28, max: 1, costs: [230], requires: ["emergency_review"], desc: "每局第一次 DDL 自爆不会降级塔。" },
+      { id: "extension_pass", name: "延期申请通过", icon: "批", x: 65, y: 68, max: 1, costs: [220], requires: ["crisis_pr"], desc: "每波第一个 DDL 怪出现时自动被强力减速 2 秒。" },
+      { id: "advisor_unread", name: "导师已读不回", icon: "读", x: 84, y: 48, max: 1, costs: [280], requires: ["reverse_delay", "extension_pass"], desc: "DDL 总负责人的追责范围降低 20%。" },
+    ],
+  },
+  {
+    key: "boss",
+    title: "Boss 答辩委员会",
+    motto: "把每次大考都拆成可复习的题型。",
+    accent: "#fb7185",
+    nodes: [
+      { id: "midterm_review", name: "期中复习", icon: "中", x: 8, y: 34, max: 2, costs: [70, 145], desc: "对期中试卷 Boss 伤害每级 +8%。" },
+      { id: "no_extra_paper", name: "拒绝加卷", icon: "拒", x: 26, y: 20, max: 1, costs: [150], requires: ["midterm_review"], desc: "期中试卷召唤作业怪的间隔延长。" },
+      { id: "ddl_filing", name: "DDL 备案", icon: "备", x: 26, y: 52, max: 1, costs: [150], requires: ["midterm_review"], desc: "DDL 总负责人追责间隔延长。" },
+      { id: "lab_prereview", name: "实验预审", icon: "验", x: 46, y: 34, max: 2, costs: [95, 185], requires: ["no_extra_paper", "ddl_filing"], desc: "实验验收 Boss 护甲每级降低 4。" },
+      { id: "paper_check", name: "论文查重", icon: "查", x: 46, y: 72, max: 2, costs: [95, 185], requires: ["ddl_filing"], desc: "毕业论文 Boss 拆分小怪血量每级 -12%。" },
+      { id: "mentor_signature", name: "导师签字", icon: "签", x: 66, y: 52, max: 1, costs: [240], requires: ["lab_prereview", "paper_check"], desc: "Boss 冲进教务处造成的 GPA 伤害 -0.1。" },
+      { id: "committee_archive", name: "答辩归档", icon: "档", x: 84, y: 52, max: 1, costs: [300], requires: ["mentor_signature"], desc: "抵达过 Boss 波后，结算学术学分 +12%。" },
+    ],
+  },
+  {
+    key: "weird",
+    title: "奇怪但有用的科研",
+    motto: "正经不一定赢，有趣通常有解。",
+    accent: "#a78bfa",
+    nodes: [
+      { id: "interdisciplinary", name: "交叉学科", icon: "叉", x: 7, y: 48, max: 1, costs: [130], desc: "局内强化从 3 选 1 变成 4 选 1。" },
+      { id: "reroll_project", name: "课题重投", icon: "刷", x: 24, y: 28, max: 1, costs: [160], requires: ["interdisciplinary"], desc: "每局第一次局内强化可以刷新一次。" },
+      { id: "blind_box", name: "学术盲盒", icon: "盒", x: 24, y: 68, max: 1, costs: [150], requires: ["interdisciplinary"], desc: "开局随机获得一个小型全局增益。" },
+      { id: "mystic_tuning", name: "玄学调参", icon: "玄", x: 44, y: 28, max: 2, costs: [100, 185], requires: ["reroll_project"], desc: "每波开始时有概率获得 10-25 资源。" },
+      { id: "pressure_group", name: "组会压迫感", icon: "压", x: 44, y: 68, max: 1, costs: [170], requires: ["blind_box"], desc: "敌人越接近教务处，受到的伤害越高。" },
+      { id: "defense_rehearsal", name: "答辩彩排", icon: "辩", x: 64, y: 28, max: 1, costs: [210], requires: ["mystic_tuning"], desc: "Boss 波开始时获得 45 资源补给。" },
+      { id: "good_ppt", name: "优秀答辩 PPT", icon: "P", x: 64, y: 68, max: 1, costs: [260], requires: ["pressure_group"], desc: "击破 Boss 后立刻获得一次局内强化选择。" },
+      { id: "starcloud_help", name: "瀚海星云求助", icon: "云", x: 84, y: 48, max: 1, costs: [300], requires: ["defense_rehearsal", "good_ppt"], desc: "GPA 低于 1.0 时自动获得资源并全局减速一次。" },
+    ],
+  },
+];
+
+const RESEARCH_NODE_MAP = {};
+for (const branch of RESEARCH_BRANCHES) {
+  for (const node of branch.nodes) {
+    RESEARCH_NODE_MAP[node.id] = { ...node, branch: branch.key };
+  }
+}
 
 const DIFFICULTIES = {
   confidential: {

@@ -68,12 +68,13 @@ canvas.addEventListener("mousemove", () => {});
 
 function addCustomBuildSlot(x, y) {
   const point = [x, y];
+  const cost = customSlotCost();
   if (x < 34 || x > WIDTH - 34 || y < 34 || y > HEIGHT - 34) return { ok: false, reason: "边界太近" };
-  if (state.resources < CUSTOM_SLOT_COST) return { ok: false, reason: `需要 ${CUSTOM_SLOT_COST} 资源` };
+  if (state.resources < cost) return { ok: false, reason: `需要 ${cost} 资源` };
   if (pointBlocked(x, y, state.map.target)) return { ok: false, reason: "此处不可部署" };
-  if (state.map.target && distance(point, state.map.target) < 58) return { ok: false, reason: "离教务处太近" };
+  if (state.map.target && distance(point, state.map.target) < 58) return { ok: false, reason: "离目标太近" };
   if (state.slots.some(slot => distance([slot.x, slot.y], point) < 48)) return { ok: false, reason: "距离太近" };
-  state.resources -= CUSTOM_SLOT_COST;
+  state.resources -= cost;
   state.slots.push({ x: Math.round(x), y: Math.round(y), tower: null, custom: true });
   state.selectedSlot = state.slots.length - 1;
   return { ok: true };
@@ -84,7 +85,7 @@ function slotBonusHtml(slot) {
     return `<div class="tower-tip"><strong>${slot.bonus.name}</strong>：${slot.bonus.desc}</div>`;
   }
   if (slot.custom) {
-    return `<div class="tower-tip"><strong>临时部署点</strong>：无建筑加成，已花费 ${CUSTOM_SLOT_COST} 资源开设。</div>`;
+    return `<div class="tower-tip"><strong>临时部署点</strong>：无建筑加成，当前开设费用 ${customSlotCost()} 资源。</div>`;
   }
   return "";
 }
@@ -104,10 +105,11 @@ function popBuildBubble(slot, x, y) {
     const g = buildPanel.querySelector("#opsG");
     Object.entries(TOWERS).forEach(([kind, d]) => {
       if (!save.unlocks.includes(kind)) return;
+      const cost = towerBuildCost(kind, slot);
       const b = document.createElement("button");
       b.className = "hud-btn";
-      b.textContent = `${d.name} (${d.cost})`;
-      b.disabled = state.resources < d.cost;
+      b.textContent = `${d.name} (${cost})`;
+      b.disabled = state.resources < cost;
       b.onclick = () => {
         executeBuildTower(slot, kind);
         buildPanel.classList.add("hidden");
@@ -117,14 +119,15 @@ function popBuildBubble(slot, x, y) {
   } else {
     const t = slot.tower;
     const d = TOWERS[t.kind];
-    const upCost = Math.trunc(d.cost * (0.75 + t.level * 0.55));
+    const upCost = Math.trunc(d.cost * (0.75 + t.level * 0.55) * (state.mods?.upgradeCostScale || 1));
+    const refundRate = (state.mods?.fullRefundCharges || 0) > 0 ? 1 : 0.5;
     buildPanel.innerHTML = `
       <h3>${d.name} Lv.${t.level}</h3>
       <p>模型当前运作状态良好。可进行升级或回收课题。</p>
       ${slotBonusHtml(slot)}
       <div class="bubble-ops">
         <button class="hud-btn" ${t.level >= 3 || state.resources < upCost ? "disabled" : ""} id="bubbleUp">${t.level >= 3 ? "已满级" : `升级 (${upCost})`}</button>
-        <button class="hud-btn danger" id="bubbleSell">回收 (+${Math.trunc(t.spent * 0.5)})</button>
+        <button class="hud-btn danger" id="bubbleSell">回收 (+${Math.trunc(t.spent * refundRate)})</button>
       </div>
     `;
     buildPanel.querySelector("#bubbleUp").onclick = () => {
@@ -132,11 +135,14 @@ function popBuildBubble(slot, x, y) {
         state.resources -= upCost;
         t.spent += upCost;
         t.level += 1;
+        markFirstLv3Bonus(t);
         buildPanel.classList.add("hidden");
       }
     };
     buildPanel.querySelector("#bubbleSell").onclick = () => {
-      state.resources += Math.trunc(t.spent * 0.5);
+      const fullRefund = (state.mods?.fullRefundCharges || 0) > 0;
+      if (fullRefund) state.mods.fullRefundCharges -= 1;
+      state.resources += Math.trunc(t.spent * (fullRefund ? 1 : 0.5));
       slot.tower = null;
       buildPanel.classList.add("hidden");
     };
@@ -191,17 +197,18 @@ function showTowerInspectBubble(kind) {
 }
 
 function towerSpecialText(kind) {
-  if (kind === "lab") return `特殊：命中点周围 ${TOWERS.lab.splash} 范围内敌人也会受伤。`;
-  if (kind === "coffee") return `特殊：造成 ${Math.round(TOWERS.coffee.slow * 100)}% 减速，并每 ${TOWERS.coffee.incomeCd}s 产出资源。`;
+  if (kind === "lab") return `特殊：命中点周围 ${TOWERS.lab.splash + (state.mods?.labSplashBonus || 0)} 范围内敌人也会受伤。`;
+  if (kind === "coffee") return `特殊：造成 ${Math.round(((TOWERS.coffee.slow || 0) + (state.mods?.globalSlow || 0)) * 100)}% 减速，并每 ${TOWERS.coffee.incomeCd}s 产出资源。`;
   if (kind === "physics") return "特殊：冷却极短，适合持续拦截高速敌人。";
   return "特殊：单发伤害高，适合压制厚血敌人。";
 }
 
 function executeBuildTower(slot, kind) {
   if (!save.unlocks.includes(kind)) return;
-  if (state.resources >= TOWERS[kind].cost) {
-    state.resources -= TOWERS[kind].cost;
-    slot.tower = { kind, x: slot.x, y: slot.y, level: 1, spent: TOWERS[kind].cost, cooldownLeft: 0, incomeLeft: TOWERS[kind].incomeCd || 5, bonus: slot.bonus || null };
+  const cost = towerBuildCost(kind, slot);
+  if (state.resources >= cost) {
+    state.resources -= cost;
+    slot.tower = { kind, x: slot.x, y: slot.y, source: slot.source || null, level: 1, spent: cost, cooldownLeft: 0, incomeLeft: TOWERS[kind].incomeCd || 5, bonus: slot.bonus || null };
   }
 }
 

@@ -51,6 +51,14 @@ function draw() {
 }
 
 function drawCampusMap(map, alpha = 1) {
+  if (map?.style === "west") {
+    drawWestMap(map, alpha);
+    return;
+  }
+  if (map?.style === "gaoxin") {
+    drawGaoxinMap(map, alpha);
+    return;
+  }
   ctx.save();
   ctx.globalAlpha = alpha;
   const sky = ctx.createLinearGradient(0, 0, WIDTH, HEIGHT);
@@ -69,7 +77,7 @@ function drawCampusMap(map, alpha = 1) {
   drawRoad([[0, 628], [250, 602], [468, 590], [710, 562], [1180, 582]], 36);
   drawWalkway([[526, 354], [674, 354], [822, 332], [948, 260]], 10);
 
-  for (const building of CAMPUS_BUILDINGS) {
+  for (const building of map.buildings || CAMPUS_BUILDINGS) {
     if (building.kind === "office") drawAcademicOffice(building.x, building.y);
     else drawBuilding(building.x, building.y, building.w, building.h, building.color, building.label);
   }
@@ -79,6 +87,324 @@ function drawCampusMap(map, alpha = 1) {
   drawStarMark(512, 355);
   drawTrees();
   drawLandmarkLabels(map.landmarks);
+  ctx.restore();
+}
+
+function drawGaoxinMap(map, alpha = 1) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  const sky = ctx.createLinearGradient(0, 0, WIDTH, HEIGHT);
+  sky.addColorStop(0, "#dfe8e9");
+  sky.addColorStop(0.42, "#95b978");
+  sky.addColorStop(1, "#47733e");
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+  drawGaoxinGrassBands();
+  drawGaoxinLake();
+  drawRoad([[0, 70], [280, 58], [560, 66], [850, 62], [1180, 76]], 32);
+  drawRoad([[0, 420], [150, 420], [286, 420]], 28);
+  drawRoad([[760, 420], [850, 360], [944, 282], [1012, 210]], 28);
+  drawRoad([[902, 352], [930, 486], [906, 720]], 24);
+  drawSipeiBridge();
+  drawGaoxinSportsField();
+
+  for (const building of map.buildings || []) {
+    if (building.kind === "office") drawAcademicOffice(building.x, building.y);
+    else drawBuilding(building.x, building.y, building.w, building.h, building.color, building.label);
+  }
+
+  drawTrees();
+  drawLandmarkLabels(map.landmarks);
+  ctx.restore();
+}
+
+function drawWestMap(map, alpha = 1) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  const sky = ctx.createLinearGradient(0, 0, WIDTH, HEIGHT);
+  sky.addColorStop(0, "#dcead7");
+  sky.addColorStop(0.38, "#9bc47e");
+  sky.addColorStop(1, "#4f7f48");
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+  drawWestGrassBands();
+  drawRoad([[0, 50], [270, 42], [520, 32], [815, 30], [1180, 40]], 32);
+  drawRoad([[0, 294], [190, 290], [318, 320]], 26);
+  drawRoad([[1180, 210], [1062, 254], [980, 316], [914, 346]], 24);
+  drawRoad([[128, 684], [238, 646], [446, 654], [650, 634], [810, 582], [914, 346]], 28);
+  drawRoad([[232, 292], [330, 250], [452, 194], [704, 114], [1000, 36]], 20);
+  drawWestLake();
+  drawWestWalkways();
+
+  for (const building of map.buildings || []) {
+    drawBuilding(building.x, building.y, building.w, building.h, building.color, building.label);
+  }
+
+  drawWestLandmarks();
+  drawWestTrees();
+  drawLandmarkLabels(map.landmarks);
+  ctx.restore();
+}
+
+function drawWestGrassBands() {
+  ctx.save();
+  for (let i = 0; i < 20; i += 1) {
+    const x = (i * 91 + 34) % WIDTH;
+    const y = (i * 127 + 78) % HEIGHT;
+    ctx.fillStyle = i % 2 ? "rgba(61, 137, 70, 0.18)" : "rgba(205, 227, 148, 0.22)";
+    ctx.beginPath();
+    ctx.ellipse(x, y, 118 + (i % 4) * 22, 38 + (i % 3) * 13, -0.45 + i * 0.11, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawWestLake() {
+  ctx.save();
+  const water = ctx.createLinearGradient(368, 246, 720, 512);
+  water.addColorStop(0, "#73c8d8");
+  water.addColorStop(0.52, "#2f9bb4");
+  water.addColorStop(1, "#176f88");
+  ctx.fillStyle = water;
+  ctx.beginPath();
+  ctx.ellipse(486, 330, 126, 94, -0.22, 0, Math.PI * 2);
+  ctx.ellipse(620, 372, 154, 116, 0.18, 0, Math.PI * 2);
+  ctx.ellipse(492, 470, 112, 78, -0.18, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = "rgba(236, 255, 255, 0.42)";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.ellipse(486, 330, 112, 80, -0.22, 0, Math.PI * 2);
+  ctx.ellipse(620, 372, 140, 102, 0.18, 0, Math.PI * 2);
+  ctx.ellipse(492, 470, 96, 64, -0.18, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.fillStyle = "rgba(255,255,255,0.2)";
+  for (let i = 0; i < 6; i += 1) {
+    ctx.fillRect(430 + i * 44, 360 + (i % 3) * 18, 56, 4);
+  }
+  ctx.restore();
+}
+
+function drawWestWalkways() {
+  drawWalkway([[344, 298], [414, 240], [548, 216], [704, 250], [806, 330], [862, 394], [806, 478], [650, 528], [450, 520], [352, 434], [344, 298]], 9);
+  drawWalkway([[760, 452], [810, 420], [862, 394], [922, 350]], 12);
+  drawWalkway([[352, 482], [382, 512], [438, 512]], 8);
+}
+
+function drawWestEnemyPaths() {
+  ctx.save();
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  const routes = [
+    [[1138, 44], [1000, 72], [780, 88], [704, 150], [724, 230], [828, 272], [910, 310], [976, 352]],
+    [[0, 330], [232, 328], [322, 364], [350, 456], [438, 548], [612, 558], [774, 514], [862, 430], [914, 382], [976, 352]],
+    [[132, 720], [246, 686], [446, 694], [648, 674], [806, 620], [850, 536], [854, 450], [914, 382], [976, 352]],
+  ];
+  ctx.strokeStyle = "rgba(139, 64, 43, 0.34)";
+  ctx.lineWidth = 15;
+  for (const route of routes) polyline(route);
+  ctx.strokeStyle = "rgba(255, 232, 174, 0.78)";
+  ctx.lineWidth = 8;
+  for (const route of routes) polyline(route);
+  ctx.setLineDash([15, 14]);
+  ctx.strokeStyle = "rgba(205, 73, 48, 0.86)";
+  ctx.lineWidth = 3;
+  for (const route of routes) polyline(route);
+  ctx.restore();
+}
+
+function drawWestLandmarks() {
+  ctx.save();
+  drawStatue(382, 512);
+  ctx.fillStyle = "rgba(241, 247, 235, 0.92)";
+  for (let i = 0; i < 7; i += 1) {
+    ctx.beginPath();
+    ctx.ellipse(790 + i * 9, 384 - i * 3, 4, 18, -0.55, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.fillStyle = "#d7c9a6";
+  roundedRect(842, 380, 64, 18, 9, true, false);
+  ctx.restore();
+}
+
+function drawWestTrees() {
+  ctx.save();
+  for (let i = 0; i < 135; i += 1) {
+    const x = (i * 73 + 30) % WIDTH;
+    const y = (i * 109 + 42) % HEIGHT;
+    if (pointInWestLakeShape(x, y)) continue;
+    if ((x > 240 && x < 1040 && y > 48 && y < 680 && i % 4 === 0)) continue;
+    ctx.fillStyle = i % 10 === 0 ? "#d47792" : (i % 3 ? "#2f7c3e" : "#4b9b48");
+    ctx.beginPath();
+    ctx.arc(x, y, 8 + (i % 4) * 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "rgba(45, 67, 35, 0.45)";
+    ctx.fillRect(x - 1, y + 6, 2, 7);
+  }
+  ctx.restore();
+}
+
+function pointInWestLakeShape(x, y) {
+  return pointInEllipse(x, y, 486, 330, 142, 108, -0.22)
+    || pointInEllipse(x, y, 620, 372, 170, 130, 0.18)
+    || pointInEllipse(x, y, 492, 470, 128, 92, -0.18);
+}
+
+function pointInEllipse(x, y, cx, cy, rx, ry, rotation = 0) {
+  const cos = Math.cos(-rotation);
+  const sin = Math.sin(-rotation);
+  const dx = x - cx;
+  const dy = y - cy;
+  const px = dx * cos - dy * sin;
+  const py = dx * sin + dy * cos;
+  return (px * px) / (rx * rx) + (py * py) / (ry * ry) <= 1;
+}
+
+function drawGaoxinGrassBands() {
+  ctx.save();
+  for (let i = 0; i < 18; i += 1) {
+    const x = (i * 83 + 28) % WIDTH;
+    const y = (i * 137 + 84) % HEIGHT;
+    ctx.fillStyle = i % 2 ? "rgba(74, 142, 64, 0.18)" : "rgba(190, 219, 137, 0.22)";
+    ctx.beginPath();
+    ctx.ellipse(x, y, 130 + (i % 4) * 24, 42 + (i % 3) * 14, -0.25 + i * 0.09, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawGaoxinLake() {
+  ctx.save();
+  const water = ctx.createLinearGradient(338, 320, 682, 600);
+  water.addColorStop(0, "#68bdd0");
+  water.addColorStop(1, "#1f7890");
+  ctx.fillStyle = water;
+  ctx.beginPath();
+  ctx.ellipse(482, 392, 130, 96, -0.1, 0, Math.PI * 2);
+  ctx.ellipse(556, 478, 154, 112, 0.12, 0, Math.PI * 2);
+  ctx.ellipse(430, 528, 102, 76, -0.12, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(230, 255, 255, 0.38)";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.ellipse(482, 392, 118, 84, -0.1, 0, Math.PI * 2);
+  ctx.ellipse(556, 478, 140, 98, 0.12, 0, Math.PI * 2);
+  ctx.ellipse(430, 528, 88, 64, -0.12, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.fillStyle = "rgba(255,255,255,0.18)";
+  for (let i = 0; i < 5; i += 1) {
+    ctx.fillRect(400 + i * 44, 502 + i * 8, 58, 4);
+  }
+  ctx.restore();
+}
+
+function drawSipeiBridge() {
+  ctx.save();
+  const deck = [[304, 382], [764, 382], [786, 420], [760, 458], [304, 458], [282, 420]];
+  ctx.shadowColor = "rgba(30, 45, 42, 0.34)";
+  ctx.shadowBlur = 16;
+  ctx.shadowOffsetY = 8;
+  ctx.fillStyle = "#d7c8aa";
+  ctx.beginPath();
+  deck.forEach(([x, y], idx) => idx ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
+  ctx.closePath();
+  ctx.fill();
+  ctx.shadowColor = "transparent";
+  ctx.strokeStyle = "rgba(95, 76, 48, 0.5)";
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.strokeStyle = "#f7efe0";
+  ctx.lineWidth = 22;
+  polyline([[316, 420], [760, 420]]);
+  ctx.strokeStyle = "#9bb0a5";
+  ctx.lineWidth = 4;
+  polyline([[316, 390], [750, 390]]);
+  polyline([[316, 450], [750, 450]]);
+  ctx.strokeStyle = "rgba(68, 91, 87, 0.35)";
+  ctx.lineWidth = 2;
+  for (let i = 0; i < 14; i += 1) {
+    const x = 330 + i * 30;
+    line([x, 392], [x + 18, 448]);
+  }
+  ctx.fillStyle = "rgba(47, 107, 232, 0.88)";
+  roundedRect(494, 366, 84, 24, 4, true, false);
+  ctx.strokeStyle = "rgba(255,255,255,0.72)";
+  ctx.lineWidth = 2;
+  roundedRect(494, 366, 84, 24, 4, false, true);
+  ctx.fillStyle = "#fff";
+  ctx.font = "bold 13px sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("思佩桥", 536, 378);
+  ctx.fillStyle = "rgba(255,255,255,0.8)";
+  roundedRect(296, 406, 30, 22, 4, true, false);
+  roundedRect(746, 406, 30, 22, 4, true, false);
+  ctx.fillStyle = "#6f7f77";
+  ctx.fillRect(305, 414, 12, 6);
+  ctx.fillRect(755, 414, 12, 6);
+  ctx.fillStyle = "#2f6be8";
+  ctx.restore();
+}
+
+function drawGaoxinPaths() {
+  ctx.save();
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  const mainPaths = [
+    [[26, 230], [26, 420], [282, 420], [536, 420]],
+    [[0, 420], [282, 420], [536, 420]],
+    [[28, 610], [260, 590], [316, 540], [316, 420], [536, 420]],
+    [[536, 420], [760, 420], [850, 360], [884, 312], [944, 282], [1008, 240], [1012, 210]],
+  ];
+  const bypassPaths = [
+    [[26, 230], [160, 236], [340, 236], [540, 252], [720, 318], [850, 300], [944, 282], [1008, 240], [1012, 210]],
+    [[28, 610], [180, 594], [340, 608], [520, 624], [720, 620], [862, 610], [900, 540], [900, 420], [884, 340], [896, 292], [944, 282], [1008, 240], [1012, 210]],
+  ];
+  ctx.strokeStyle = "rgba(138, 67, 57, 0.34)";
+  ctx.lineWidth = 16;
+  for (const path of mainPaths) polyline(path);
+  ctx.strokeStyle = "rgba(244, 238, 221, 0.72)";
+  ctx.lineWidth = 8;
+  for (const path of mainPaths) polyline(path);
+  ctx.strokeStyle = "rgba(138, 67, 57, 0.22)";
+  ctx.lineWidth = 12;
+  for (const path of bypassPaths) polyline(path);
+  ctx.strokeStyle = "rgba(244, 238, 221, 0.56)";
+  ctx.lineWidth = 6;
+  for (const path of bypassPaths) polyline(path);
+  ctx.restore();
+}
+
+function drawGaoxinSportsField() {
+  ctx.save();
+  ctx.fillStyle = "#b94c3f";
+  roundedRect(826, 590, 282, 118, 48, true, false);
+  ctx.fillStyle = "#4f9f54";
+  roundedRect(856, 610, 222, 72, 12, true, false);
+  ctx.strokeStyle = "rgba(255,255,255,0.68)";
+  ctx.lineWidth = 2;
+  for (let i = 0; i < 5; i += 1) {
+    ctx.strokeRect(876 + i * 34, 618, 24, 56);
+  }
+  ctx.restore();
+}
+
+function drawGaoxinDormCourts() {
+  ctx.save();
+  ctx.fillStyle = "rgba(64, 169, 231, 0.68)";
+  roundedRect(1038, 284, 92, 54, 8, true, false);
+  roundedRect(1044, 548, 94, 58, 8, true, false);
+  ctx.strokeStyle = "rgba(255,255,255,0.72)";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(1052, 296, 64, 30);
+  ctx.strokeRect(1058, 560, 62, 34);
   ctx.restore();
 }
 
@@ -271,25 +597,42 @@ function drawLandmarkLabels(labels) {
 
 function pickEnemyPath() {
   const routes = state.map.routes && state.map.routes.length ? state.map.routes : [state.map.path];
-  const base = routes[Math.floor(Math.random() * routes.length)];
-  return varyRoute(base, state.map.target);
+  const base = pickWeightedRoute(routes, state.map.routeWeights);
+  return varyRoute(base, state.map.target, state.map);
 }
 
-function varyRoute(route, target) {
+function pickWeightedRoute(routes, weights) {
+  if (!Array.isArray(weights) || weights.length !== routes.length) {
+    return routes[Math.floor(Math.random() * routes.length)];
+  }
+  const total = weights.reduce((sum, weight) => sum + Math.max(0, Number(weight) || 0), 0);
+  if (total <= 0) return routes[Math.floor(Math.random() * routes.length)];
+  let roll = Math.random() * total;
+  for (let i = 0; i < routes.length; i += 1) {
+    roll -= Math.max(0, Number(weights[i]) || 0);
+    if (roll <= 0) return routes[i];
+  }
+  return routes[routes.length - 1];
+}
+
+function varyRoute(route, target, map = state?.map) {
   if (!route || route.length <= 2) return route || [target];
   return route.map((point, idx) => {
     if (idx === 0 || idx === route.length - 1) return point;
+    if (map?.choke && distance(point, map.choke) < 70) return point;
+    if (map?.passages?.some(passage => pointInPassage(point[0], point[1], passage))) return point;
     for (let tries = 0; tries < 6; tries += 1) {
       const angle = Math.random() * Math.PI * 2;
       const radius = 5 + Math.random() * 14;
       const candidate = [point[0] + Math.cos(angle) * radius, point[1] + Math.sin(angle) * radius];
-      if (!pointBlocked(candidate[0], candidate[1], target)) return candidate;
+      if (!pointBlocked(candidate[0], candidate[1], target, map)) return candidate;
     }
     return point;
   });
 }
 
 function buildSpawnRoutes(map) {
+  if (map.routes && map.routes.length) return map.routes.map(route => route.map(point => [...point]));
   const spawns = map.spawns || [map.spawn || (map.path && map.path[0]) || [WIDTH - 24, HEIGHT / 2]];
   return spawns.map(spawn => buildMapRoute(map, spawn)).filter(route => route && route.length > 1);
 }
@@ -297,6 +640,15 @@ function buildSpawnRoutes(map) {
 function buildMapRoute(map, spawn) {
   const start = spawn || map.spawn || (map.path && map.path[0]) || [WIDTH - 24, HEIGHT / 2];
   const target = map.target || (map.path && map.path[map.path.length - 1]) || [WIDTH / 2, HEIGHT / 2];
+  if (map.choke && distance(start, map.choke) > 8 && distance(target, map.choke) > 8) {
+    const first = buildMapRouteSegment(map, start, map.choke);
+    const second = buildMapRouteSegment(map, map.choke, target);
+    if (first.length > 1 && second.length > 1) return [...first.slice(0, -1), ...second];
+  }
+  return buildMapRouteSegment(map, start, target);
+}
+
+function buildMapRouteSegment(map, start, target) {
   const cell = 24;
   const cols = Math.ceil(WIDTH / cell);
   const rows = Math.ceil(HEIGHT / cell);
@@ -316,7 +668,7 @@ function buildMapRoute(map, spawn) {
       const route = reconstructRoute(cameFrom, current).map(node => nodeToPoint(node, cell));
       route[0] = start;
       route[route.length - 1] = target;
-      return simplifyRoute(route, target);
+      return simplifyRoute(route, target, map);
     }
     closed.add(currentKey);
 
@@ -324,11 +676,11 @@ function buildMapRoute(map, spawn) {
       const nextKey = nodeKey(next);
       if (closed.has(nextKey)) continue;
       const nextPoint = nodeToPoint(next, cell);
-      if (pointBlocked(nextPoint[0], nextPoint[1], target)) continue;
+      if (pointBlocked(nextPoint[0], nextPoint[1], target, map)) continue;
       if (next.x !== current.x && next.y !== current.y) {
         const horizontal = nodeToPoint({ x: next.x, y: current.y }, cell);
         const vertical = nodeToPoint({ x: current.x, y: next.y }, cell);
-        if (pointBlocked(horizontal[0], horizontal[1], target) || pointBlocked(vertical[0], vertical[1], target)) continue;
+        if (pointBlocked(horizontal[0], horizontal[1], target, map) || pointBlocked(vertical[0], vertical[1], target, map)) continue;
       }
       const stepCost = next.x !== current.x && next.y !== current.y ? 1.42 : 1;
       const tentative = (gScore.get(currentKey) ?? Infinity) + stepCost;
@@ -386,20 +738,20 @@ function reconstructRoute(cameFrom, current) {
   return route;
 }
 
-function simplifyRoute(route, target) {
+function simplifyRoute(route, target, map) {
   if (route.length <= 2) return route;
   const simplified = [route[0]];
   let anchor = 0;
   while (anchor < route.length - 1) {
     let next = route.length - 1;
-    while (next > anchor + 1 && !lineWalkable(route[anchor], route[next], target)) next -= 1;
+    while (next > anchor + 1 && !lineWalkable(route[anchor], route[next], target, map)) next -= 1;
     simplified.push(route[next]);
     anchor = next;
   }
-  return softenedRoute(simplified, target);
+  return softenedRoute(simplified, target, map);
 }
 
-function softenedRoute(route, target) {
+function softenedRoute(route, target, map) {
   if (route.length <= 2) return route;
   const result = [route[0]];
   for (let i = 1; i < route.length - 1; i += 1) {
@@ -408,36 +760,40 @@ function softenedRoute(route, target) {
     const next = route[i + 1];
     const inPoint = [current[0] * 0.72 + prev[0] * 0.28, current[1] * 0.72 + prev[1] * 0.28];
     const outPoint = [current[0] * 0.72 + next[0] * 0.28, current[1] * 0.72 + next[1] * 0.28];
-    if (lineWalkable(result[result.length - 1], inPoint, target)) result.push(inPoint);
+    if (lineWalkable(result[result.length - 1], inPoint, target, map)) result.push(inPoint);
     result.push(current);
-    if (lineWalkable(current, outPoint, target)) result.push(outPoint);
+    if (lineWalkable(current, outPoint, target, map)) result.push(outPoint);
   }
   result.push(route[route.length - 1]);
   return result.filter((point, idx) => idx === 0 || distance(point, result[idx - 1]) > 4);
 }
 
-function lineWalkable(a, b, target) {
+function lineWalkable(a, b, target, map) {
   const steps = Math.max(2, Math.ceil(distance(a, b) / 8));
   for (let i = 0; i <= steps; i += 1) {
     const t = i / steps;
     const x = a[0] + (b[0] - a[0]) * t;
     const y = a[1] + (b[1] - a[1]) * t;
-    if (pointBlocked(x, y, target)) return false;
+    if (pointBlocked(x, y, target, map)) return false;
   }
   return true;
 }
 
-function pointBlocked(x, y, target) {
+function pointBlocked(x, y, target, map = state?.map || MAPS[mapIndex] || MAPS[0]) {
   if (target && distance([x, y], target) < 32) return false;
+  if (map?.choke && distance([x, y], map.choke) < 34) return false;
+  if (map?.passages?.some(passage => pointInPassage(x, y, passage))) return false;
   if (x < 16 || x > WIDTH - 8 || y < 18 || y > HEIGHT - 18) return false;
   const padding = 12;
-  if (CAMPUS_BUILDINGS.some(building => (
+  const buildings = map?.buildings || CAMPUS_BUILDINGS;
+  const blockers = map?.blockers || CAMPUS_BLOCKERS;
+  if (buildings.some(building => (
     x >= building.x - padding &&
     x <= building.x + building.w + padding &&
     y >= building.y - padding &&
     y <= building.y + building.h + padding
   ))) return true;
-  return CAMPUS_BLOCKERS.some(blocker => {
+  return blockers.some(blocker => {
     if (blocker.kind === "circle") return distance([x, y], [blocker.x, blocker.y]) <= blocker.r;
     return (
       x >= blocker.x - padding &&
@@ -446,6 +802,11 @@ function pointBlocked(x, y, target) {
       y <= blocker.y + blocker.h + padding
     );
   });
+}
+
+function pointInPassage(x, y, passage) {
+  if (passage.kind === "circle") return distance([x, y], [passage.x, passage.y]) <= passage.r;
+  return x >= passage.x && x <= passage.x + passage.w && y >= passage.y && y <= passage.y + passage.h;
 }
 
 function drawEnemyRoute(path, target) {
@@ -513,6 +874,8 @@ function drawRouteTarget(x, y) {
 function drawIntroBriefing() {
   if (!state.introTime || state.introTime <= 0 || state.wave > 0) return;
   const alpha = Math.min(1, state.introTime / 0.8);
+  const targetName = state.map?.name === "也西湖" ? "图书馆" : "教务处";
+  const warningTitle = targetName === "图书馆" ? "紧急图书馆预警" : "紧急教务预警";
   ctx.save();
   ctx.globalAlpha = alpha;
   ctx.fillStyle = "rgba(31, 42, 28, 0.28)";
@@ -530,13 +893,13 @@ function drawIntroBriefing() {
   ctx.font = "900 42px sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText("紧急教务预警", WIDTH / 2, 278);
+  ctx.fillText(warningTitle, WIDTH / 2, 278);
   ctx.font = "bold 24px sans-serif";
   ctx.fillStyle = "#f6d98a";
-  ctx.fillText("书本怪物正从校园边缘涌向教务处", WIDTH / 2, 326);
+  ctx.fillText(`书本怪物正从校园边缘涌向${targetName}`, WIDTH / 2, 326);
   ctx.font = "18px sans-serif";
   ctx.fillStyle = "rgba(255, 247, 223, 0.9)";
-  ctx.fillText("它们会绕开建筑自动寻路。一旦冲进教务处，你的 GPA 会被扣除。", WIDTH / 2, 372);
+  ctx.fillText(`它们会绕开建筑自动寻路。一旦冲进${targetName}，你的 GPA 会被扣除。`, WIDTH / 2, 372);
   ctx.fillStyle = "rgba(255, 247, 223, 0.76)";
   ctx.fillText("满绩点 4.3。提示消失后，正式开始防守。", WIDTH / 2, 412);
   ctx.restore();
