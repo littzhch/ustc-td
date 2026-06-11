@@ -1,0 +1,11 @@
+.git/**
+.wrangler/**
+node_modules/**
+.env
+.env.*
+.gitignore
+wrangler.jsonc
+package.json
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
