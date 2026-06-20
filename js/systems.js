@@ -554,6 +554,7 @@ function upgradeRandomTower() {
   const tower = candidates[Math.floor(Math.random() * candidates.length)];
   tower.level += 1;
   markFirstLv3Bonus(tower);
+  state.effects.push({ kind: "tower-upgrade", x: tower.x, y: tower.y, level: tower.level, tower: tower.kind, life: 0.48, maxLife: 0.48 });
   state.floating.push({ x: tower.x, y: tower.y - 28, text: "老师点名 Lv+1", color: "#fbbf24", life: 1.0 });
   return true;
 }

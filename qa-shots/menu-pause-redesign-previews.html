@@ -1,0 +1,709 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>菜单与暂停界面重设计预览</title>
+  <style>
+    :root {
+      --green: #26774b;
+      --green-dark: #173f2b;
+      --paper: rgba(255, 250, 229, 0.86);
+      --paper-solid: #fff7df;
+      --line: rgba(66, 82, 55, 0.2);
+      --text: #24301f;
+      --muted: #65745d;
+      --danger: #c8453d;
+      --blue: #2f6be8;
+      --gold: #c88022;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 24px;
+      background: #29351f;
+      font-family: "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+      color: var(--text);
+    }
+
+    .concept {
+      position: relative;
+      width: 1440px;
+      height: 900px;
+      margin: 0 0 32px;
+      overflow: hidden;
+      border-radius: 22px;
+      background-image:
+        linear-gradient(90deg, rgba(245, 242, 216, 0.78), rgba(235, 246, 218, 0.5)),
+        url("../assets/source/current_map_ui_reference.png");
+      background-size: cover;
+      background-position: center;
+      box-shadow: 0 28px 70px rgba(0, 0, 0, 0.34);
+    }
+
+    .concept::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      backdrop-filter: blur(8px) saturate(0.92);
+      background: rgba(248, 245, 221, 0.26);
+    }
+
+    .screen {
+      position: absolute;
+      top: 30px;
+      bottom: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.66);
+      box-shadow: 0 18px 48px rgba(47, 58, 36, 0.18);
+      overflow: hidden;
+    }
+
+    .menu {
+      left: 30px;
+      width: 905px;
+      border-radius: 24px;
+      padding: 34px 38px;
+      background: rgba(255, 250, 229, 0.62);
+    }
+
+    .pause {
+      right: 30px;
+      width: 455px;
+      border-radius: 24px;
+      background:
+        linear-gradient(rgba(244, 247, 224, 0.64), rgba(244, 247, 224, 0.64)),
+        url("../assets/maps/map_east_campus_01.png");
+      background-size: cover;
+      background-position: center;
+      padding: 30px;
+    }
+
+    .kicker {
+      margin-bottom: 8px;
+      color: var(--green);
+      font-weight: 900;
+      font-size: 13px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3, p { margin: 0; }
+    h1 {
+      font-size: 56px;
+      line-height: 1.05;
+      letter-spacing: 0;
+      color: #21301f;
+      text-shadow: 0 2px 0 rgba(255, 255, 255, 0.42);
+    }
+
+    .lead {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.7;
+    }
+
+    .bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 64px;
+      margin-top: 26px;
+      padding: 12px 16px;
+      border: 1px solid rgba(47, 107, 232, 0.24);
+      border-radius: 14px;
+      background: rgba(239, 250, 253, 0.72);
+    }
+
+    .bar strong {
+      display: block;
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+
+    .bar span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .primary {
+      border: 0;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #2d8754, #20683f);
+      color: #fffdf0;
+      font-weight: 900;
+      box-shadow: 0 8px 18px rgba(30, 100, 61, 0.26);
+    }
+
+    .ghost {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255, 253, 239, 0.76);
+      color: var(--text);
+      font-weight: 800;
+    }
+
+    .danger {
+      color: var(--danger);
+      border-color: rgba(200, 69, 61, 0.28);
+    }
+
+    .btn {
+      min-width: 112px;
+      height: 42px;
+      padding: 0 18px;
+      font-size: 15px;
+    }
+
+    .section-title {
+      margin-top: 30px;
+      margin-bottom: 16px;
+      font-size: 27px;
+      font-weight: 900;
+    }
+
+    .difficulty {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-top: 24px;
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255, 252, 236, 0.62);
+    }
+
+    .difficulty .summary {
+      padding: 8px 10px;
+      border-right: 1px solid rgba(66, 82, 55, 0.16);
+    }
+
+    .difficulty h3 {
+      color: var(--green);
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+
+    .difficulty p {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .diff-card {
+      min-height: 86px;
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 245, 0.66);
+    }
+
+    .diff-card.active {
+      background: linear-gradient(135deg, rgba(91, 54, 48, 0.92), rgba(196, 71, 61, 0.74));
+      color: #fff9eb;
+      border-color: rgba(216, 92, 77, 0.95);
+      box-shadow: 0 12px 24px rgba(98, 45, 39, 0.24);
+    }
+
+    .diff-card strong { display: block; font-size: 18px; margin-bottom: 8px; }
+    .diff-card span { color: inherit; opacity: 0.78; font-size: 13px; line-height: 1.5; }
+
+    .maps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .map-card {
+      position: relative;
+      min-height: 184px;
+      padding: 26px 24px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255, 252, 236, 0.82);
+      box-shadow: 0 12px 26px rgba(48, 58, 36, 0.12);
+    }
+
+    .map-card.active {
+      border-color: rgba(200, 69, 61, 0.74);
+      box-shadow: 0 0 0 3px rgba(200, 69, 61, 0.13), 0 16px 28px rgba(86, 47, 38, 0.18);
+    }
+
+    .map-card.active::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      height: 7px;
+      border-radius: 16px 16px 0 0;
+      background: var(--danger);
+    }
+
+    .map-card h3 {
+      font-size: 23px;
+      margin-bottom: 12px;
+    }
+
+    .map-card p {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.55;
+    }
+
+    .tag {
+      position: absolute;
+      right: 22px;
+      bottom: 18px;
+      color: var(--green);
+      font-weight: 900;
+      font-size: 13px;
+    }
+
+    .active .tag { color: var(--danger); }
+
+    .actions {
+      display: flex;
+      gap: 14px;
+      margin-top: 28px;
+      align-items: center;
+    }
+
+    .actions .primary {
+      width: 160px;
+      height: 62px;
+      font-size: 21px;
+    }
+
+    .actions .ghost {
+      width: 136px;
+      height: 56px;
+      font-size: 16px;
+    }
+
+    .archive {
+      position: absolute;
+      right: 38px;
+      top: 52px;
+      width: 210px;
+      padding: 20px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255, 252, 236, 0.76);
+    }
+
+    .archive h3 {
+      color: var(--green);
+      font-size: 19px;
+      margin-bottom: 14px;
+    }
+
+    .archive .score {
+      color: var(--blue);
+      font-size: 26px;
+      font-weight: 900;
+    }
+
+    .pause-title {
+      text-align: center;
+      margin-top: 126px;
+      font-size: 44px;
+      font-weight: 900;
+      color: #22321f;
+    }
+
+    .pause-sub {
+      margin-top: 12px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .pause-panel {
+      margin: 26px auto 0;
+      width: 300px;
+      padding: 22px;
+      border-radius: 24px;
+      background: rgba(255, 250, 229, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.76);
+      box-shadow: 0 20px 48px rgba(45, 58, 34, 0.22);
+    }
+
+    .pause-panel button {
+      width: 100%;
+      height: 54px;
+      margin-bottom: 14px;
+      font-size: 17px;
+    }
+
+    .pause-panel button:last-child { margin-bottom: 0; }
+
+    .concept-2 {
+      background-image:
+        linear-gradient(90deg, rgba(233, 249, 219, 0.42), rgba(239, 247, 226, 0.24)),
+        url("../assets/source/current_map_ui_reference.png");
+    }
+
+    .concept-2::before {
+      backdrop-filter: blur(5px) saturate(1.02);
+      background: rgba(242, 247, 221, 0.1);
+    }
+
+    .concept-2 .menu {
+      background: rgba(244, 250, 228, 0.44);
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    .concept-2 .top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+    }
+
+    .concept-2 .mini-archive {
+      width: 180px;
+      padding: 16px;
+      border-radius: 16px;
+      background: rgba(255, 252, 236, 0.68);
+      border: 1px solid var(--line);
+    }
+
+    .concept-2 .hero-actions {
+      display: flex;
+      gap: 14px;
+      margin-top: 28px;
+    }
+
+    .concept-2 .hero-actions button {
+      height: 58px;
+      padding: 0 28px;
+      font-size: 19px;
+    }
+
+    .concept-2 .maps {
+      margin-top: 64px;
+    }
+
+    .concept-2 .map-card {
+      min-height: 228px;
+      background:
+        linear-gradient(180deg, rgba(255, 252, 236, 0.82), rgba(239, 249, 224, 0.76));
+    }
+
+    .concept-2 .difficulty {
+      grid-template-columns: 180px 190px 190px 1fr;
+      margin-top: 30px;
+      align-items: center;
+    }
+
+    .concept-2 .diff-card { min-height: 58px; padding: 16px 18px; }
+    .concept-2 .diff-card strong { margin: 0; }
+
+    .concept-2 .pause-panel {
+      width: 330px;
+      background: rgba(246, 253, 234, 0.7);
+    }
+
+    .concept-2 .pause-title {
+      margin-top: 98px;
+      text-align: left;
+      padding-left: 34px;
+    }
+
+    .concept-2 .pause-sub {
+      text-align: left;
+      padding-left: 36px;
+    }
+
+    .concept-2 .pause-panel button {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 18px;
+      text-align: left;
+    }
+
+    .shortcut {
+      display: inline-flex;
+      width: 42px;
+      height: 30px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.34);
+      font-size: 12px;
+    }
+
+    .concept-3 {
+      background-image:
+        linear-gradient(90deg, rgba(250, 239, 207, 0.7), rgba(247, 238, 210, 0.42)),
+        url("../assets/source/current_map_ui_reference.png");
+    }
+
+    .concept-3::before {
+      backdrop-filter: blur(7px) saturate(0.9);
+      background: rgba(251, 243, 216, 0.24);
+    }
+
+    .concept-3 .menu {
+      display: grid;
+      grid-template-columns: 210px 1fr;
+      gap: 26px;
+      background: rgba(255, 247, 219, 0.58);
+    }
+
+    .concept-3 .left-rail {
+      padding: 24px 20px;
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background: rgba(255, 252, 235, 0.82);
+    }
+
+    .concept-3 h1 {
+      font-size: 44px;
+    }
+
+    .level-pill {
+      height: 58px;
+      margin: 16px 0;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      font-weight: 900;
+    }
+
+    .level-pill.green {
+      background: rgba(232, 251, 220, 0.86);
+      border: 1px solid rgba(47, 125, 79, 0.38);
+    }
+
+    .level-pill.red {
+      color: #fff9eb;
+      background: linear-gradient(135deg, rgba(107, 59, 51, 0.94), rgba(202, 73, 61, 0.76));
+      border: 1px solid rgba(202, 73, 61, 0.72);
+    }
+
+    .concept-3 .maps {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+      margin-top: 24px;
+    }
+
+    .concept-3 .map-card {
+      min-height: 212px;
+    }
+
+    .concept-3 .actions {
+      margin-top: 18px;
+    }
+
+    .concept-3 .pause-panel {
+      width: 324px;
+      padding: 24px;
+      background: rgba(255, 247, 219, 0.84);
+      border-color: rgba(120, 100, 60, 0.18);
+    }
+
+    .stamp {
+      margin: 28px auto 0;
+      width: 78px;
+      height: 78px;
+      border-radius: 50%;
+      border: 4px solid rgba(200, 69, 61, 0.54);
+      display: grid;
+      place-items: center;
+      color: rgba(200, 69, 61, 0.76);
+      font-size: 13px;
+      font-weight: 900;
+      transform: rotate(-9deg);
+    }
+  </style>
+</head>
+<body>
+  <section class="concept concept-1" data-shot="1">
+    <div class="screen menu">
+      <div class="kicker">USTC ROGUELIKE TD</div>
+      <h1>科大守卫战</h1>
+      <p class="lead">东区一教进入布防预览。书本怪物将沿校园道路逼近核心建筑。</p>
+      <div class="archive">
+        <h3>学术教务档案</h3>
+        <p>可用学术学分 <span class="score">219</span></p>
+      </div>
+      <div class="bar">
+        <div>
+          <strong>绝密东区一教 · 第 3 波</strong>
+          <span>上次存档 06-19 17:55</span>
+        </div>
+        <button class="btn primary">继续存档</button>
+      </div>
+      <div class="difficulty">
+        <div class="summary">
+          <h3>行动级别</h3>
+          <p>选择怪物强度、波次长度与撤退结算规则。</p>
+        </div>
+        <div class="diff-card">
+          <strong>机密行动</strong>
+          <span>标准教务危机，适合熟悉地图与建筑加成。</span>
+        </div>
+        <div class="diff-card active">
+          <strong>绝密行动</strong>
+          <span>怪物逐波成长，撤退后按坚守波次结算。</span>
+        </div>
+      </div>
+      <h2 class="section-title">选择校园前线</h2>
+      <div class="maps">
+        <article class="map-card active">
+          <h3>绝密东区一教</h3>
+          <p>怪潮从右下角主干道进入，沿校园大道冲向一教入口。</p>
+          <span class="tag">绝密行动</span>
+        </article>
+        <article class="map-card">
+          <h3>高新校区</h3>
+          <p>永怀湖两岸防线，思佩桥是左右侧怪潮汇合的唯一通道。</p>
+          <span class="tag">已接入</span>
+        </article>
+        <article class="map-card">
+          <h3>也西湖</h3>
+          <p>西区环湖三线防守，南侧教学区与湖畔卡点共同回收。</p>
+          <span class="tag">已接入</span>
+        </article>
+      </div>
+      <div class="actions">
+        <button class="primary">正式出战</button>
+        <button class="ghost">玩法说明</button>
+        <button class="ghost">局外成长</button>
+      </div>
+    </div>
+    <div class="screen pause">
+      <h2 class="pause-title">战局已暂停</h2>
+      <p class="pause-sub">防线暂时稳住了，回去继续守路口。</p>
+      <div class="pause-panel">
+        <button class="primary">回到防线</button>
+        <button class="ghost">保存当前战局</button>
+        <button class="ghost">重构本局防线</button>
+        <button class="ghost danger">放弃并返回主菜单</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="concept concept-2" data-shot="2">
+    <div class="screen menu">
+      <div class="top-row">
+        <div>
+          <div class="kicker">USTC DEFENSE</div>
+          <h1>科大守卫战</h1>
+          <p class="lead">地图优先的出战界面，减少厚重面板，把选择集中在前线卡片与底部操作。</p>
+          <div class="hero-actions">
+            <button class="primary btn">开始防守</button>
+            <button class="ghost btn">继续存档</button>
+            <button class="ghost btn">局外成长</button>
+          </div>
+        </div>
+        <div class="mini-archive">
+          <h3>档案</h3>
+          <p>学分 <span class="score">219</span></p>
+          <p>近期最高：第 7 波</p>
+        </div>
+      </div>
+      <div class="maps">
+        <article class="map-card active">
+          <h3>东区一教</h3>
+          <p>短线防守，核心入口清晰，适合直接进入标准战局。</p>
+          <span class="tag">当前选择</span>
+        </article>
+        <article class="map-card">
+          <h3>高新校区</h3>
+          <p>三门汇入桥面，过桥后沿黄路抵达右上建筑。</p>
+          <span class="tag">已接入</span>
+        </article>
+        <article class="map-card">
+          <h3>也西湖</h3>
+          <p>环湖道路更长，建筑贴近浅黄色主路，塔位更讲究。</p>
+          <span class="tag">已接入</span>
+        </article>
+      </div>
+      <div class="difficulty">
+        <div class="summary">
+          <h3>行动级别</h3>
+        </div>
+        <div class="diff-card">
+          <strong>机密行动</strong>
+        </div>
+        <div class="diff-card active">
+          <strong>绝密行动</strong>
+        </div>
+        <p>波次更长，怪物强度逐步提升，撤退按坚守波次结算。</p>
+      </div>
+    </div>
+    <div class="screen pause">
+      <h2 class="pause-title">防线暂停</h2>
+      <p class="pause-sub">战局状态已保留，地图与怪物路径不改变。</p>
+      <div class="pause-panel">
+        <button class="primary"><span>继续作战</span><span class="shortcut">Space</span></button>
+        <button class="ghost"><span>保存战局</span><span class="shortcut">S</span></button>
+        <button class="ghost"><span>重新开始</span><span class="shortcut">R</span></button>
+        <button class="ghost danger"><span>撤回主菜单</span><span class="shortcut">Esc</span></button>
+      </div>
+    </div>
+  </section>
+
+  <section class="concept concept-3" data-shot="3">
+    <div class="screen menu">
+      <aside class="left-rail">
+        <div class="kicker">校务手册</div>
+        <h2>行动级别</h2>
+        <div class="level-pill green">机密</div>
+        <div class="level-pill red">绝密</div>
+        <p class="lead">当前规则：怪物波成长，撤退后结算，路线按地图固定。</p>
+        <div class="actions">
+          <button class="primary">正式出战</button>
+        </div>
+      </aside>
+      <main>
+        <h1>科大守卫战</h1>
+        <p class="lead">校园防线档案，选择地图、行动级别与出战目标。</p>
+        <div class="maps">
+          <article class="map-card active">
+            <h3>绝密东区一教</h3>
+            <p>核心教学楼入口，短线防守，强调塔基规划。</p>
+            <span class="tag">绝密行动</span>
+          </article>
+          <article class="map-card">
+            <h3>高新校区</h3>
+            <p>三门进入，过桥后沿路进入右上建筑。</p>
+            <span class="tag">已接入</span>
+          </article>
+          <article class="map-card">
+            <h3>也西湖</h3>
+            <p>环湖道路更清楚，建筑贴近浅黄色主路。</p>
+            <span class="tag">已接入</span>
+          </article>
+          <article class="map-card">
+            <h3>近期守卫战绩</h3>
+            <p>防线失守 · 绝密第 7 波<br>胜利演算 · 机密第 10 波</p>
+            <span class="tag">学分 219</span>
+          </article>
+        </div>
+        <div class="actions">
+          <button class="ghost">玩法说明</button>
+          <button class="ghost">进入局外成长</button>
+          <button class="ghost danger">重置全部档案</button>
+        </div>
+      </main>
+    </div>
+    <div class="screen pause">
+      <div class="stamp">暂停</div>
+      <h2 class="pause-title">战局已暂停</h2>
+      <p class="pause-sub">像校务手册翻页一样，安静但明确。</p>
+      <div class="pause-panel">
+        <button class="primary">回到防线</button>
+        <button class="ghost">保存当前战局</button>
+        <button class="ghost">重构本局防线</button>
+        <button class="ghost danger">放弃并返回主菜单</button>
+      </div>
+    </div>
+  </section>
+</body>
+</html>

@@ -19,7 +19,7 @@ canvas.addEventListener("click", ev => {
   const rect = canvas.getBoundingClientRect();
   const x = (ev.clientX - rect.left) * (WIDTH / rect.width);
   const y = (ev.clientY - rect.top) * (HEIGHT / rect.height);
-  const idx = state.slots.findIndex(s => distance([x, y], [s.x, s.y]) <= 24);
+  const idx = state.slots.findIndex(s => distance([x, y], [s.x, s.y]) <= slotHitRadius(s));
 
   if (idx < 0) {
     state.selectedSlot = null;
@@ -44,7 +44,7 @@ canvas.addEventListener("contextmenu", ev => {
   const rect = canvas.getBoundingClientRect();
   const x = (ev.clientX - rect.left) * (WIDTH / rect.width);
   const y = (ev.clientY - rect.top) * (HEIGHT / rect.height);
-  const existingIdx = state.slots.findIndex(s => distance([x, y], [s.x, s.y]) <= 28);
+  const existingIdx = state.slots.findIndex(s => distance([x, y], [s.x, s.y]) <= slotHitRadius(s) + 4);
   if (existingIdx >= 0) {
     state.selectedSlot = existingIdx;
     if (state.slots[existingIdx].tower) {
@@ -64,7 +64,22 @@ canvas.addEventListener("contextmenu", ev => {
   });
 });
 
-canvas.addEventListener("mousemove", () => {});
+canvas.addEventListener("mousemove", ev => {
+  if (state.mode !== "running") {
+    canvas.style.cursor = "";
+    return;
+  }
+  const rect = canvas.getBoundingClientRect();
+  const x = (ev.clientX - rect.left) * (WIDTH / rect.width);
+  const y = (ev.clientY - rect.top) * (HEIGHT / rect.height);
+  const idx = state.slots.findIndex(s => distance([x, y], [s.x, s.y]) <= slotHitRadius(s));
+  state.hoverSlot = idx >= 0 ? idx : null;
+  canvas.style.cursor = idx >= 0 ? "pointer" : "";
+});
+
+function slotHitRadius(slot) {
+  return slot?.radius || 24;
+}
 
 function addCustomBuildSlot(x, y) {
   const point = [x, y];
@@ -82,10 +97,10 @@ function addCustomBuildSlot(x, y) {
 
 function slotBonusHtml(slot) {
   if (slot.bonus) {
-    return `<div class="tower-tip"><strong>${slot.bonus.name}</strong>：${slot.bonus.desc}</div>`;
+    return `<div class="tower-badge">${slot.bonus.name}</div>`;
   }
   if (slot.custom) {
-    return `<div class="tower-tip"><strong>临时部署点</strong>：无建筑加成，当前开设费用 ${customSlotCost()} 资源。</div>`;
+    return `<div class="tower-badge">临时部署点</div>`;
   }
   return "";
 }
@@ -98,7 +113,6 @@ function popBuildBubble(slot, x, y) {
   if (!slot.tower) {
     buildPanel.innerHTML = `
       <h3>研发布署防线</h3>
-      <p>选择要在当前学术槽位架设的模型：</p>
       ${slotBonusHtml(slot)}
       <div class="bubble-ops" id="opsG"></div>
     `;
@@ -123,11 +137,10 @@ function popBuildBubble(slot, x, y) {
     const refundRate = (state.mods?.fullRefundCharges || 0) > 0 ? 1 : 0.5;
     buildPanel.innerHTML = `
       <h3>${d.name} Lv.${t.level}</h3>
-      <p>模型当前运作状态良好。可进行升级或回收课题。</p>
       ${slotBonusHtml(slot)}
       <div class="bubble-ops">
-        <button class="hud-btn" ${t.level >= 3 || state.resources < upCost ? "disabled" : ""} id="bubbleUp">${t.level >= 3 ? "已满级" : `升级 (${upCost})`}</button>
-        <button class="hud-btn danger" id="bubbleSell">回收 (+${Math.trunc(t.spent * refundRate)})</button>
+        <button class="hud-btn has-icon" ${t.level >= 3 || state.resources < upCost ? "disabled" : ""} id="bubbleUp">${t.level >= 3 ? "已满级" : `<img class="btn-icon" src="assets/ui/icon_upgrade.png" alt="">升级 (${upCost})`}</button>
+        <button class="hud-btn danger has-icon" id="bubbleSell"><img class="btn-icon" src="assets/ui/icon_sell.png" alt="">回收 (+${Math.trunc(t.spent * refundRate)})</button>
       </div>
     `;
     buildPanel.querySelector("#bubbleUp").onclick = () => {
@@ -135,6 +148,7 @@ function popBuildBubble(slot, x, y) {
         state.resources -= upCost;
         t.spent += upCost;
         t.level += 1;
+        state.effects.push({ kind: "tower-upgrade", x: t.x, y: t.y, level: t.level, tower: t.kind, life: 0.48, maxLife: 0.48 });
         markFirstLv3Bonus(t);
         buildPanel.classList.add("hidden");
       }
@@ -143,6 +157,7 @@ function popBuildBubble(slot, x, y) {
       const fullRefund = (state.mods?.fullRefundCharges || 0) > 0;
       if (fullRefund) state.mods.fullRefundCharges -= 1;
       state.resources += Math.trunc(t.spent * (fullRefund ? 1 : 0.5));
+      state.effects.push({ kind: "tower-sell", x: t.x, y: t.y, tower: t.kind, life: 0.44, maxLife: 0.44 });
       slot.tower = null;
       buildPanel.classList.add("hidden");
     };
@@ -169,7 +184,6 @@ function showPlacedTowerBubble(slot, x, y) {
       ${stats.income ? `<div><span>补给收益</span><strong>+${stats.income}</strong></div>` : ""}
       <div><span>已投入</span><strong>${tower.spent}</strong></div>
     </div>
-    <div class="tower-tip">${towerSpecialText(tower.kind)}</div>
   `;
   buildPanel.classList.remove("hidden");
 }
@@ -184,14 +198,12 @@ function showTowerInspectBubble(kind) {
   buildPanel.innerHTML = `
     <h3>${data.name}</h3>
     <div class="tower-role">${data.role}</div>
-    <p>${data.desc}</p>
       <div class="tower-stat-grid">
         <div><span>费用</span><strong>${data.cost}</strong></div>
         <div><span>伤害</span><strong>${data.damage}</strong></div>
         <div><span>射程</span><strong>${data.range}</strong></div>
         <div><span>冷却</span><strong>${data.cooldown}s</strong></div>
       </div>
-      <div class="tower-tip">升级：每升一级额外发射 1 发攻击。${towerSpecialText(kind)}</div>
   `;
   buildPanel.classList.remove("hidden");
 }
@@ -209,6 +221,7 @@ function executeBuildTower(slot, kind) {
   if (state.resources >= cost) {
     state.resources -= cost;
     slot.tower = { kind, x: slot.x, y: slot.y, source: slot.source || null, level: 1, spent: cost, cooldownLeft: 0, incomeLeft: TOWERS[kind].incomeCd || 5, bonus: slot.bonus || null };
+    state.effects.push({ kind: "tower-build", x: slot.x, y: slot.y, tower: kind, life: 0.42, maxLife: 0.42 });
   }
 }
 

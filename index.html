@@ -12,9 +12,9 @@
       <canvas id="game" width="1180" height="720"></canvas>
 
       <div id="hud" class="hud-bar hidden">
-        <div class="hud-item"><span class="icon">GPA</span><strong id="life">4.3</strong></div>
+        <div class="hud-item"><span class="icon gpa-icon"><img class="hud-icon-img" src="assets/ui/icon_hp.png" alt=""><span>GPA</span></span><strong id="life">4.3</strong></div>
         <div class="hud-item"><span class="icon">⚡</span><strong id="resource">120</strong></div>
-        <div class="hud-item"><span class="icon">🌊</span><strong id="wave">0/10</strong></div>
+        <div class="hud-item"><span class="icon"><img class="hud-icon-img" src="assets/ui/icon_wave.png" alt="波次"></span><strong id="wave">0/10</strong></div>
         <div class="hud-xp">
           <span>强化</span>
           <div class="xp-track"><i id="enhanceXpBar"></i></div>
@@ -24,7 +24,7 @@
         <div class="hud-item"><span class="icon">🏆</span><strong id="score">0</strong></div>
         <div class="hud-item"><span class="icon">🎓</span><strong id="credits">0</strong></div>
         <button id="saveBtn" class="hud-btn">存档</button>
-        <button id="pauseBtn" class="hud-btn">暂停 (Space)</button>
+        <button id="pauseBtn" class="hud-btn has-icon"><img class="btn-icon" src="assets/ui/icon_pause.png" alt="">暂停 (Space)</button>
         <button id="abortBtn" class="hud-btn danger">撤退</button>
       </div>
 

@@ -1,6 +1,7 @@
 // 本文件由 game.js 拆分而来，保持普通 script 全局加载以兼容 file:// 运行。
 function switchOverlay(mode) {
   state.mode = mode;
+  screenOverlay.classList.remove("mode-menu", "mode-growth", "mode-guide", "mode-choosing", "mode-gameover", "mode-victory", "mode-paused");
   if (mode === "running") {
     screenOverlay.classList.add("hidden");
     hud.classList.remove("hidden");
@@ -13,6 +14,7 @@ function switchOverlay(mode) {
   hud.classList.add("hidden");
   hotbar.classList.add("hidden");
   screenOverlay.classList.remove("hidden");
+  screenOverlay.classList.add(`mode-${mode}`);
 
   if (mode === "menu") renderMainMenu();
   else if (mode === "growth") renderGrowthMenu();
@@ -26,72 +28,178 @@ function renderMainMenu() {
   const difficulty = DIFFICULTIES[difficultyKey] || DIFFICULTIES.confidential;
   const runSave = loadRunSave();
   const selectedMap = MAPS[mapIndex] || MAPS[0];
-  const savedMap = runSave ? (MAPS[runSave.mapIndex] || MAPS[0]) : null;
-  const continueHtml = runSave ? `
-    <div class="continue-run">
-      <div>
-        <strong>${DIFFICULTIES[runSave.difficultyKey]?.label || "机密"}${savedMap.name} · 第 ${runSave.state?.wave || 0} 波</strong>
-        <span>上次存档 ${formatSaveTime(runSave.savedAt)}</span>
-      </div>
-      <button class="prime-btn" onclick="continueSavedRun()">继续存档</button>
-      <button class="sub-btn danger-lite" onclick="deleteSavedRun()">删除</button>
-    </div>
-  ` : "";
-  const historyHtml = [...save.history].reverse().slice(0, 4).map(r => `
-    <div class="history-item ${r.won ? "win" : "lose"}">
-      <div class="meta"><span>${r.won ? "守卫成功" : "防线失守"}</span><span>${r.difficulty || "机密"} 第 ${r.wave} 波</span></div>
-      <div style="color:var(--text-muted); font-size:11px;">积分: ${r.score} | 学分: +${r.credits}</div>
-    </div>
-  `).join("") || '<p style="color:var(--text-muted); font-size:13px;">暂无校园守卫记录。</p>';
 
   const mapsHtml = MAPS.map((map, idx) => `
-    <div class="map-node ${idx === mapIndex ? `active ${difficultyKey}` : ""} ${map.locked ? "locked" : ""}" onclick="selectMapNode(${idx})">
-      <h3>${idx === mapIndex && !map.locked ? `${difficulty.label}${map.name}` : map.name}</h3>
-      <p>${map.subtitle}</p>
-      <span class="map-tag">${map.locked ? map.preview : (idx === mapIndex ? difficulty.title : map.preview)}</span>
+    <div class="premium-map-card ${idx === mapIndex ? "active" : ""} ${map.locked ? "locked" : ""}" onclick="selectMapNode(${idx})">
+      <div class="premium-map-art">
+        <img src="${menuMapThumb(map, idx)}" alt="${map.name}">
+      </div>
+      <h3>${map.name}</h3>
+      <span class="premium-map-medal">${idx === mapIndex ? difficulty.label : map.preview}</span>
     </div>
   `).join("");
 
   const difficultyHtml = Object.entries(DIFFICULTIES).map(([key, item]) => `
-    <button class="difficulty-btn ${difficultyKey === key ? `active ${key}` : ""}" onclick="selectDifficulty('${key}')">
-      <span>${item.title}</span>
-      <small>${item.desc}</small>
+    <button class="premium-chip ${difficultyKey === key ? "active" : ""}" onclick="selectDifficulty('${key}')">
+      ${item.title}
     </button>
   `).join("");
 
   screenOverlay.innerHTML = `
-    <div class="menu-layout">
-      <div class="menu-main">
-        <div class="brand">
-          <p class="eyebrow">USTC Roguelike TD</p>
-          <h1>科大守卫战</h1>
-          <p class="subtitle">${selectedMap.name}进入布防预览。书本怪物将沿校园道路逼近核心建筑。</p>
-        </div>
-        ${continueHtml}
-        <div class="difficulty-panel ${difficultyKey}">
+    <div class="premium-menu">
+      <header class="premium-menu-head">
+        <div class="premium-brand-row">
+          <img class="premium-crest" src="assets/ui/menu_crest_premium.png" alt="科大校徽">
           <div>
-            <div class="sidebar-title">行动级别</div>
-            <p>${difficulty.label}${selectedMap.name} · ${difficulty.desc}</p>
+            <p class="premium-kicker">USTC DEFENSE</p>
+            <h1>科大守卫战</h1>
           </div>
-          <div class="difficulty-switch">${difficultyHtml}</div>
         </div>
-        <h2 style="margin-top:20px;">选择校园前线</h2>
-        <div class="map-deck">${mapsHtml}</div>
-        <div class="action-row">
-          <button class="prime-btn" onclick="startBattle()">正式出战</button>
-          <button class="sub-btn" style="margin-top:32px;" onclick="switchOverlay('guide')">玩法说明</button>
-          <button class="sub-btn" style="margin-top:32px;" onclick="switchOverlay('growth')">进入局外成长</button>
+        <div class="premium-top-actions">
+          <button class="premium-archive" onclick="switchOverlay('growth')">
+            <img src="assets/ui/menu_icon_archive_premium.png" alt="">
+            <span>档案</span>
+            <strong>${save.credits}</strong>
+          </button>
+          <button class="premium-round-btn" onclick="switchOverlay('guide')">
+            <img src="assets/ui/menu_icon_pause_premium.png" alt="说明">
+          </button>
         </div>
-      </div>
-      <div class="menu-sidebar">
-        <div class="sidebar-title">学术教务档案</div>
-        <div style="margin-bottom:20px; font-size:14px;">可用学术学分: <strong style="color:var(--theme-blue); font-size:18px;">${save.credits}</strong></div>
-        <div class="sidebar-title">近期守卫战绩</div>
-        <div class="history-stream">${historyHtml}</div>
-        <button class="sub-btn" style="margin-top:16px; font-size:11px; color:var(--theme-rose);" onclick="resetAllSaves()">重置全部档案</button>
-      </div>
+      </header>
+
+      <section class="premium-map-deck">${mapsHtml}</section>
+
+      <section class="premium-command-dock">
+        <button class="premium-start-btn" onclick="startBattle()">
+          <img src="assets/ui/menu_start_medal.png" alt="">
+          <span>开始防守</span>
+        </button>
+        <div class="premium-dock-divider"></div>
+        <button class="premium-continue-btn ${runSave ? "" : "disabled"}" ${runSave ? 'onclick="continueSavedRun()"' : "disabled"}>
+          <span>继续</span>
+        </button>
+        <div class="premium-difficulty">${difficultyHtml}</div>
+      </section>
     </div>
   `;
+}
+
+function menuMapThumb(map, idx) {
+  if (map.bitmap === "gaoxinCampus" || idx === 1) return "assets/ui/menu_thumb_gaoxin.png";
+  if (map.bitmap === "westCampus" || idx === 2) return "assets/ui/menu_thumb_west.png";
+  return "assets/ui/menu_thumb_east.png";
+}
+
+const RESEARCH_ICON_ASSETS = {
+  library: "assets/ui/research/research_library.png",
+  academic: "assets/ui/research/research_academic.png",
+  fountain: "assets/ui/research/research_fountain.png",
+  radar: "assets/ui/research/research_radar.png",
+  tree: "assets/ui/research/research_tree.png",
+  bridge: "assets/ui/research/research_bridge.png",
+  desk: "assets/ui/research/research_desk.png",
+  archive: "assets/ui/research/research_archive.png",
+};
+
+const RESEARCH_NODE_ICON_BY_ID = {
+  freshman_pack: "archive",
+  gpa_buffer: "fountain",
+  prestudy: "desk",
+  office_firewall: "academic",
+  dont_fail: "radar",
+  scholarship_edge: "archive",
+  final_review: "library",
+  math_tutoring: "library",
+  formula_burst: "radar",
+  physics_team: "fountain",
+  quantum_clicker: "radar",
+  lab_safety: "academic",
+  danger_reagent: "archive",
+  coffee_refill: "desk",
+  all_nighter: "tree",
+  library_seat: "library",
+  admin_stamp: "academic",
+  canteen_subsidy: "fountain",
+  teacher_course: "academic",
+  museum_spirit: "archive",
+  star_calibration: "radar",
+  campus_planning: "bridge",
+  golden_seat: "desk",
+  deadline_radar: "radar",
+  alarm_clock: "fountain",
+  ta_intercept: "academic",
+  emergency_review: "archive",
+  crisis_pr: "bridge",
+  reverse_delay: "radar",
+  extension_pass: "library",
+  advisor_unread: "archive",
+  midterm_review: "library",
+  no_extra_paper: "archive",
+  ddl_filing: "radar",
+  lab_prereview: "academic",
+  paper_check: "library",
+  mentor_signature: "desk",
+  committee_archive: "archive",
+  interdisciplinary: "bridge",
+  reroll_project: "fountain",
+  blind_box: "archive",
+  mystic_tuning: "radar",
+  pressure_group: "tree",
+  defense_rehearsal: "academic",
+  good_ppt: "desk",
+  starcloud_help: "fountain",
+};
+
+const RESEARCH_BRANCH_ICON_BY_KEY = {
+  survival: "archive",
+  tower: "fountain",
+  campus: "tree",
+  deadline: "radar",
+  boss: "bridge",
+  weird: "archive",
+};
+
+function researchNodeIconSrc(node) {
+  return RESEARCH_ICON_ASSETS[RESEARCH_NODE_ICON_BY_ID[node.id] || "archive"];
+}
+
+function researchBranchIconSrc(branchKey) {
+  return RESEARCH_ICON_ASSETS[RESEARCH_BRANCH_ICON_BY_KEY[branchKey] || "archive"];
+}
+
+function renderPauseMenu() {
+  screenOverlay.innerHTML = `
+    <div class="premium-pause">
+      <div class="premium-pause-copy">
+        <p class="premium-kicker">TACTICAL PAUSE</p>
+        <h1>防线暂停</h1>
+      </div>
+      <section class="premium-pause-panel">
+        <img class="premium-pause-badge" src="assets/ui/menu_pause_badge_premium.png" alt="">
+        <button class="premium-pause-action primary" onclick="resumeBattle()">
+          <img src="assets/ui/pause_icon_continue_premium.png" alt="">
+          <span>继续作战</span>
+        </button>
+        <button class="premium-pause-action" onclick="savePausedRun()">
+          <img src="assets/ui/pause_icon_save_premium.png" alt="">
+          <span>保存</span>
+        </button>
+        <button class="premium-pause-action" onclick="startBattle()">
+          <img src="assets/ui/pause_icon_restart_premium.png" alt="">
+          <span>重开</span>
+        </button>
+        <button class="premium-pause-action" onclick="switchOverlay('menu')">
+          <img src="assets/ui/pause_icon_home_premium.png" alt="">
+          <span>主菜单</span>
+        </button>
+      </section>
+    </div>
+  `;
+}
+
+function savePausedRun() {
+  saveRunSnapshot(false);
+  renderPauseMenu();
 }
 
 function renderGameplayGuide() {
@@ -155,6 +263,7 @@ function renderGrowthMenu() {
     const learned = item.nodes.reduce((sum, node) => sum + researchLevel(node.id), 0);
     return `
       <button class="research-tab ${item.key === branch.key ? "active" : ""}" style="--branch:${item.accent};" onclick="selectGrowthBranch('${item.key}')">
+        <img src="${researchBranchIconSrc(item.key)}" alt="">
         <span>${item.title}</span>
         <strong>${learned}/${total}</strong>
       </button>
@@ -176,8 +285,11 @@ function renderGrowthMenu() {
     const stateClass = level >= max ? "maxed" : locked ? "locked" : available ? "available" : "open";
     return `
       <button class="research-node ${stateClass} ${selected ? "selected" : ""}" style="left:${node.x}%; top:${node.y}%; --branch:${branch.accent};" onclick="selectResearchNode('${node.id}')">
-        <i>${node.icon}</i>
-        <span>${level}/${max}</span>
+        <img class="research-node-art" src="${researchNodeIconSrc(node)}" alt="">
+        <span class="research-node-label">
+          <b>${node.name}</b>
+          <em>${level}/${max}</em>
+        </span>
       </button>
     `;
   }).join("");
@@ -189,20 +301,40 @@ function renderGrowthMenu() {
     : '<span class="done">无前置</span>';
   const canBuy = selectedLevel < selectedMax && researchPrereqsMet(selectedNode) && save.credits >= selectedCost;
   const blockedText = selectedLevel >= selectedMax ? "已完成" : (!researchPrereqsMet(selectedNode) ? "前置不足" : (save.credits < selectedCost ? "学分不足" : "投入学分"));
+  const totalResearchLevels = RESEARCH_BRANCHES.reduce(
+    (sum, item) => sum + item.nodes.reduce((nodeSum, node) => nodeSum + (node.max || 1), 0),
+    0,
+  );
+  const learnedResearchLevels = researchUnlockedCount();
+  const allResearchNodes = RESEARCH_BRANCHES.flatMap(item => item.nodes);
+  const affordableCount = allResearchNodes.filter(node => {
+    const level = researchLevel(node.id);
+    return level < (node.max || 1) && researchPrereqsMet(node) && save.credits >= researchCost(node.id);
+  }).length;
+  const completedCount = allResearchNodes.filter(node => researchLevel(node.id) >= (node.max || 1)).length;
+  const completionPct = Math.round((learnedResearchLevels / totalResearchLevels) * 100);
+  const selectedIcon = researchNodeIconSrc(selectedNode);
 
   screenOverlay.innerHTML = `
     <div class="research-page">
       <header class="research-head">
-        <div>
-          <p class="eyebrow">科研课题树</p>
-          <h1>思维变迁档案</h1>
-          <p>${branch.motto}</p>
+        <div class="research-title-lockup">
+          <img class="research-crest" src="assets/ui/menu_crest_premium.png" alt="">
+          <div>
+            <p class="premium-kicker">ARCHIVE / GROWTH</p>
+            <h1>思维变迁档案</h1>
+            <p>${branch.motto}</p>
+          </div>
         </div>
+        <button class="research-manual" onclick="switchOverlay('guide')" aria-label="玩法说明">
+          <img src="assets/ui/icon_help.png" alt="">
+        </button>
         <div class="research-wallet">
-          <span>可用学术学分</span>
+          <img src="assets/ui/icon_coin.png" alt="">
+          <span>学分</span>
           <strong>${save.credits}</strong>
-          <small>已立项 ${researchUnlockedCount()} 项</small>
         </div>
+        <button class="research-close" onclick="switchOverlay('menu')" aria-label="返回主菜单">×</button>
       </header>
       <div class="research-shell">
         <aside class="research-tabs">${branchesHtml}</aside>
@@ -214,23 +346,64 @@ function renderGrowthMenu() {
           <svg class="research-lines" viewBox="0 0 100 100" preserveAspectRatio="none">${edgesHtml}</svg>
           ${nodesHtml}
         </section>
-        <aside class="research-detail" style="--branch:${branch.accent};">
-          <div class="detail-orbit">${selectedNode.icon}</div>
-          <p class="detail-kicker">${branch.title}</p>
-          <h2>${selectedNode.name}</h2>
-          <div class="detail-level">Lv.${selectedLevel} / ${selectedMax}</div>
-          <p class="detail-desc">${selectedNode.desc}</p>
-          <div class="detail-prereqs">
-            <strong>前置课题</strong>
-            <div>${prereqs}</div>
-          </div>
-          <button class="prime-btn research-buy" ${canBuy ? "" : "disabled"} onclick="buyResearchNode('${selectedNode.id}')">
-            ${selectedLevel >= selectedMax ? "课题已完成" : `${blockedText}${Number.isFinite(selectedCost) ? ` · ${selectedCost}` : ""}`}
-          </button>
+        <aside class="research-side" style="--branch:${branch.accent};">
+          <section class="research-detail">
+            <div class="detail-head">
+              <img class="detail-orbit" src="${selectedIcon}" alt="">
+              <div>
+                <h2>${selectedNode.name}</h2>
+                <div class="detail-level">等级 ${selectedLevel} / ${selectedMax}</div>
+                <span class="detail-status">${selectedLevel >= selectedMax ? "永久生效" : "可继续研究"}</span>
+              </div>
+            </div>
+            <section class="detail-block">
+              <strong>效果</strong>
+              <p>${selectedNode.desc}</p>
+            </section>
+            <section class="detail-block">
+              <strong>解锁条件</strong>
+              <div class="detail-prereqs">${prereqs}</div>
+            </section>
+            <section class="detail-block detail-preview">
+              <strong>升级预览</strong>
+              <div><span>当前等级</span><b>${selectedLevel}</b><i>→</i><b>${Math.min(selectedLevel + 1, selectedMax)}</b></div>
+            </section>
+            <button class="prime-btn research-buy" ${canBuy ? "" : "disabled"} onclick="buyResearchNode('${selectedNode.id}')">
+              ${selectedLevel >= selectedMax ? "课题已完成" : `${blockedText}${Number.isFinite(selectedCost) ? ` · ${selectedCost}` : ""}`}
+            </button>
+          </section>
+          <section class="outside-growth-card">
+            <div class="outside-growth-head">
+              <img src="assets/ui/icon_upgrade.png" alt="">
+              <div>
+                <p class="detail-kicker">局外成长</p>
+              <h3>长期课题总览</h3>
+              </div>
+            </div>
+            <div class="outside-growth-progress">
+              <span>总完成度</span>
+              <strong>${completionPct}%</strong>
+              <i style="width:${completionPct}%;"></i>
+            </div>
+            <div class="outside-growth-metrics">
+              <div><span>已解锁</span><strong>${learnedResearchLevels}</strong></div>
+              <div><span>研究中</span><strong>${affordableCount}</strong></div>
+              <div><span>可用学分</span><strong>${save.credits}</strong></div>
+            </div>
+          </section>
         </aside>
       </div>
-      <div class="action-row research-actions">
-        <button class="prime-btn" onclick="switchOverlay('menu')">保存并返回主菜单</button>
+      <section class="research-overview">
+        <img src="assets/ui/research/research_archive.png" alt="">
+        <div>
+          <h3>档案总览</h3>
+          <p>已解锁 ${learnedResearchLevels} / ${totalResearchLevels}</p>
+        </div>
+      </section>
+      <div class="research-zoom">
+        <button aria-label="缩小">−</button>
+        <span>100%</span>
+        <button aria-label="放大">+</button>
       </div>
     </div>
   `;
@@ -248,37 +421,19 @@ function renderEnhancementMenu() {
   `).join("");
 
   screenOverlay.innerHTML = `
-    <div class="brand" style="text-align:center;">
-      <p class="eyebrow">研修进度 ${state.enhanceXp} / ${state.enhanceXpNeed}</p>
-      <h1 style="background: linear-gradient(120deg, #fff, var(--theme-purple)); -webkit-background-clip: text;">提取突破性科研强化</h1>
-      <p class="subtitle">击杀课程怪会积累强化经验。当前进度已满载，请选择一项核心突破。</p>
+    <div class="premium-enhance">
+      <div class="premium-enhance-head">
+        <p class="premium-kicker">RESEARCH BOOST</p>
+        <h1>选择强化</h1>
+      </div>
       <div class="enhance-meter">
         <i style="width:${pct}%;"></i>
         <span>${pct}%</span>
       </div>
-    </div>
-    <div class="choice-deck">${choicesHtml}</div>
-    ${state.enhancementRerolls > 0 ? '<div class="action-row" style="justify-content:center;"><button class="sub-btn" onclick="rerollEnhancement()">课题重投</button></div>' : ""}
-  `;
-}
-
-function renderPauseMenu() {
-  screenOverlay.innerHTML = `
-    <div style="margin: auto; text-align:center; max-width:400px;">
-      <h1 style="font-size:36px; margin-bottom:24px;">战局已暂停</h1>
-      <div class="item-shelf" style="gap:16px;">
-        <button class="prime-btn" style="width:100%; margin:0;" onclick="resumeBattle()">回到防线</button>
-        <button class="sub-btn" style="width:100%;" onclick="savePausedRun()">保存当前战局</button>
-        <button class="sub-btn" style="width:100%;" onclick="startBattle()">重构本局防线 (重开)</button>
-        <button class="sub-btn" style="width:100%; color:var(--theme-rose);" onclick="switchOverlay('menu')">放弃并返回主菜单</button>
-      </div>
+      <div class="choice-deck">${choicesHtml}</div>
+      ${state.enhancementRerolls > 0 ? '<button class="premium-reroll" onclick="rerollEnhancement()">课题重投</button>' : ""}
     </div>
   `;
-}
-
-function savePausedRun() {
-  saveRunSnapshot(false);
-  renderPauseMenu();
 }
 
 function renderResultMenu(won) {
@@ -291,7 +446,7 @@ function renderResultMenu(won) {
       <p class="subtitle" style="margin-bottom:32px;">最终 GPA 与结算报告已提交教务系统</p>
       <div class="growth-grid" style="grid-template-columns:1fr; margin-bottom:32px;">
         <div class="growth-section" style="text-align:left; font-size:14px; line-height:2;">
-          <div>行动级别: <strong style="color:${state.difficultyKey === "topsecret" ? "var(--theme-rose)" : "var(--theme-green)"};">${state.difficulty?.label || "机密"}郭沫若广场</strong></div>
+          <div>行动级别: <strong style="color:${state.difficultyKey === "topsecret" ? "var(--theme-rose)" : "var(--theme-green)"};">${state.difficulty?.label || "机密"}${state.map?.name || "校园前线"}</strong></div>
           <div>阻击波次: <strong style="color:#fff;">${state.wave} / ${state.difficulty?.endless ? "∞" : state.maxWaves}</strong></div>
           <div>剩余 GPA: <strong style="color:var(--theme-green);">${formatGpa(state.life)}</strong></div>
           <div>湮灭课程怪: <strong style="color:#fff;">${state.kills}</strong></div>
@@ -470,7 +625,7 @@ function renderHotbar() {
     item.className = `hotbar-item ${hotKeySelectedTower === kind ? "selected" : ""} ${inspectedTowerKind === kind ? "inspecting" : ""}`;
     item.innerHTML = `
       <span class="cost">${cost}</span>
-      <div class="tower-token ${kind}">${towerGlyph(kind)}</div>
+      <div class="tower-token ${kind}"><img src="assets/ui/tower_card_${kind}.png" alt="${data.name}"></div>
       <span class="name">${data.name}</span>
       <span class="key-bind">${bindIdx}</span>
     `;

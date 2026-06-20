@@ -1,0 +1,176 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="720" viewBox="0 0 1180 720" role="img" aria-labelledby="title desc">
+  <title id="title">方案一：星环沙盘</title>
+  <desc id="desc">1180x720 局内地图蓝图，所有道路、建筑、部署点、怪物与攻击线均由可复刻坐标绘制。</desc>
+  <defs>
+    <linearGradient id="ground1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#eef6d2"/>
+      <stop offset="0.48" stop-color="#9fca79"/>
+      <stop offset="1" stop-color="#4c7f56"/>
+    </linearGradient>
+    <linearGradient id="road1" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#f7e8be"/>
+      <stop offset="0.5" stop-color="#fff7d8"/>
+      <stop offset="1" stop-color="#d4b67b"/>
+    </linearGradient>
+    <filter id="softShadow1" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="10" stdDeviation="8" flood-color="#21321c" flood-opacity="0.32"/>
+    </filter>
+    <filter id="glowBlue1" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="1180" height="720" fill="url(#ground1)"/>
+  <path d="M28 48 L1128 26 L1154 662 L54 690 Z" fill="#d9e7a9" opacity="0.28"/>
+  <g opacity="0.18" stroke="#f7ffe2" stroke-width="1">
+    <path d="M80 0 L16 720"/>
+    <path d="M190 0 L126 720"/>
+    <path d="M300 0 L236 720"/>
+    <path d="M410 0 L346 720"/>
+    <path d="M520 0 L456 720"/>
+    <path d="M630 0 L566 720"/>
+    <path d="M740 0 L676 720"/>
+    <path d="M850 0 L786 720"/>
+    <path d="M960 0 L896 720"/>
+    <path d="M1070 0 L1006 720"/>
+    <path d="M0 102 L1180 72"/>
+    <path d="M0 208 L1180 178"/>
+    <path d="M0 314 L1180 284"/>
+    <path d="M0 420 L1180 390"/>
+    <path d="M0 526 L1180 496"/>
+    <path d="M0 632 L1180 602"/>
+  </g>
+
+  <g id="roads" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <g stroke="#684525" stroke-width="35" opacity="0.32">
+      <polyline points="0,504 118,488 232,438 340,404 458,386 540,354 596,318"/>
+      <polyline points="0,285 132,270 252,242 356,232 450,274 536,300 596,318"/>
+      <polyline points="612,0 606,74 592,156 592,232 596,318"/>
+      <polyline points="1180,418 1042,406 924,386 806,354 700,332 596,318"/>
+      <polyline points="1180,178 1032,202 902,250 778,294 680,314 596,318"/>
+      <polyline points="252,720 306,628 382,532 468,448 540,360 596,318"/>
+    </g>
+    <g stroke="url(#road1)" stroke-width="20">
+      <polyline points="0,504 118,488 232,438 340,404 458,386 540,354 596,318"/>
+      <polyline points="0,285 132,270 252,242 356,232 450,274 536,300 596,318"/>
+      <polyline points="612,0 606,74 592,156 592,232 596,318"/>
+      <polyline points="1180,418 1042,406 924,386 806,354 700,332 596,318"/>
+      <polyline points="1180,178 1032,202 902,250 778,294 680,314 596,318"/>
+      <polyline points="252,720 306,628 382,532 468,448 540,360 596,318"/>
+    </g>
+    <g stroke="#ffffff" stroke-width="3" stroke-dasharray="12 20" opacity="0.62">
+      <polyline points="0,504 118,488 232,438 340,404 458,386 540,354 596,318"/>
+      <polyline points="0,285 132,270 252,242 356,232 450,274 536,300 596,318"/>
+      <polyline points="612,0 606,74 592,156 592,232 596,318"/>
+      <polyline points="1180,418 1042,406 924,386 806,354 700,332 596,318"/>
+      <polyline points="1180,178 1032,202 902,250 778,294 680,314 596,318"/>
+      <polyline points="252,720 306,628 382,532 468,448 540,360 596,318"/>
+    </g>
+  </g>
+
+  <g id="buildings" filter="url(#softShadow1)" font-family="Microsoft YaHei, Noto Sans SC, sans-serif" font-weight="800" text-anchor="middle">
+    <g transform="translate(115 382)">
+      <rect x="0" y="22" width="230" height="88" rx="7" fill="#a95639"/>
+      <rect x="12" y="0" width="206" height="72" rx="7" fill="#d37b55"/>
+      <rect x="32" y="-22" width="166" height="34" rx="5" fill="#f2dfbd"/>
+      <text x="115" y="44" font-size="18" fill="#fff6dc">图书馆</text>
+    </g>
+    <g transform="translate(710 96)">
+      <rect x="0" y="26" width="330" height="100" rx="7" fill="#ab563c"/>
+      <rect x="16" y="0" width="296" height="82" rx="7" fill="#df8560"/>
+      <rect x="44" y="-25" width="240" height="38" rx="5" fill="#f5e5c8"/>
+      <text x="165" y="48" font-size="18" fill="#fff6dc">第一教学楼</text>
+    </g>
+    <g transform="translate(868 438)">
+      <rect x="0" y="20" width="180" height="88" rx="7" fill="#c9b990"/>
+      <rect x="12" y="0" width="156" height="70" rx="7" fill="#eadfc7"/>
+      <text x="90" y="42" font-size="17" fill="#384139">食堂</text>
+    </g>
+    <g transform="translate(807 318)">
+      <rect x="0" y="24" width="158" height="98" rx="7" fill="#c8d9d3"/>
+      <rect x="10" y="0" width="138" height="80" rx="7" fill="#f5fbf7"/>
+      <text x="79" y="47" font-size="16" fill="#30433f">少年班</text>
+    </g>
+    <g transform="translate(150 598)">
+      <rect x="0" y="16" width="146" height="58" rx="6" fill="#c6b890"/>
+      <rect x="10" y="0" width="126" height="50" rx="6" fill="#ede4cc"/>
+      <text x="73" y="31" font-size="15" fill="#3d3d33">校史馆</text>
+    </g>
+    <g transform="translate(522 500)">
+      <rect x="0" y="17" width="108" height="58" rx="7" fill="#823d32"/>
+      <rect x="9" y="0" width="90" height="48" rx="7" fill="#b55444"/>
+      <text x="54" y="30" font-size="14" fill="#fff6dc">教务处</text>
+    </g>
+  </g>
+
+  <g id="target">
+    <circle cx="596" cy="318" r="63" fill="#173844" opacity="0.38"/>
+    <circle cx="596" cy="318" r="48" fill="#f7f0ce" stroke="#2a4c54" stroke-width="7"/>
+    <circle cx="596" cy="318" r="22" fill="#1e8790"/>
+    <text x="596" y="324" text-anchor="middle" font-family="Microsoft YaHei, Noto Sans SC, sans-serif" font-size="15" font-weight="900" fill="#fff7dd">核心</text>
+  </g>
+
+  <g id="tower-slots" fill="#fbf6dc" stroke="#274c52" stroke-width="4">
+    <circle cx="254" cy="386" r="18"/>
+    <circle cx="316" cy="398" r="18"/>
+    <circle cx="468" cy="332" r="18"/>
+    <circle cx="646" cy="312" r="18"/>
+    <circle cx="820" cy="390" r="18"/>
+    <circle cx="918" cy="286" r="18"/>
+    <circle cx="1000" cy="512" r="18"/>
+    <circle cx="212" cy="604" r="18"/>
+    <circle cx="360" cy="232" r="18"/>
+    <circle cx="760" cy="514" r="18"/>
+    <circle cx="1042" cy="338" r="18"/>
+    <circle cx="530" cy="438" r="18"/>
+  </g>
+
+  <g id="towers" filter="url(#softShadow1)">
+    <g transform="translate(468 332)">
+      <circle r="36" fill="#1f515c" opacity="0.22"/>
+      <rect x="-18" y="-28" width="36" height="50" rx="8" fill="#246879"/>
+      <path d="M0 -48 L24 -20 L0 -8 L-24 -20 Z" fill="#5fe8ff"/>
+      <circle r="10" fill="#e9fbff"/>
+    </g>
+    <g transform="translate(820 390)">
+      <circle r="34" fill="#356041" opacity="0.22"/>
+      <rect x="-22" y="-21" width="44" height="42" rx="9" fill="#29724c"/>
+      <circle r="13" fill="#79ffc0"/>
+    </g>
+    <g transform="translate(530 438)">
+      <circle r="42" fill="#7943a0" opacity="0.18"/>
+      <rect x="-19" y="-30" width="38" height="56" rx="10" fill="#6d4aa5"/>
+      <circle cy="-4" r="15" fill="#d5b8ff"/>
+    </g>
+  </g>
+
+  <g id="attacks" fill="none" stroke-linecap="round" filter="url(#glowBlue1)">
+    <path d="M468 324 C504 292 548 290 584 312" stroke="#5fe8ff" stroke-width="6"/>
+    <path d="M820 382 C776 358 730 346 690 334" stroke="#79ffc0" stroke-width="5" stroke-dasharray="10 10"/>
+    <circle cx="530" cy="438" r="78" stroke="#d5b8ff" stroke-width="4" opacity="0.55"/>
+  </g>
+
+  <g id="enemies" font-family="Microsoft YaHei, Noto Sans SC, sans-serif" text-anchor="middle" font-weight="900">
+    <g transform="translate(426 392)">
+      <path d="M0 -22 L24 -8 L18 20 L-18 20 L-24 -8 Z" fill="#f97316" stroke="#7c3216" stroke-width="4"/>
+      <text y="5" font-size="12" fill="#fff7e8">题</text>
+    </g>
+    <g transform="translate(732 340)">
+      <path d="M0 -24 L25 -14 L25 14 L0 24 L-25 14 L-25 -14 Z" fill="#ef4444" stroke="#701d1d" stroke-width="4"/>
+      <text y="5" font-size="11" fill="#fff7e8">DDL</text>
+    </g>
+    <g transform="translate(598 224)">
+      <path d="M0 -30 L32 -12 L28 25 L-28 25 L-32 -12 Z" fill="#0f766e" stroke="#134e4a" stroke-width="5"/>
+      <text y="5" font-size="12" fill="#d9fff6">盾</text>
+    </g>
+  </g>
+
+  <g id="legend" font-family="Microsoft YaHei, Noto Sans SC, sans-serif">
+    <rect x="22" y="22" width="276" height="78" rx="8" fill="#fff7df" opacity="0.92" stroke="#6d5633"/>
+    <text x="42" y="52" font-size="22" font-weight="900" fill="#203b2e">方案一：星环沙盘</text>
+    <text x="42" y="78" font-size="13" font-weight="700" fill="#5f654f">明亮校园微缩模型 · 中央核心 · 宽道路可读性最高</text>
+  </g>
+</svg>

@@ -14,7 +14,7 @@ function draw() {
     if (slot.tower) {
       drawTowerVisual(slot.tower.kind, slot.x, slot.y, slot.tower.level);
     } else {
-      drawBuildSlot(slot.x, slot.y, state.selectedSlot === idx || Boolean(hotKeySelectedTower), slot);
+      drawBuildSlot(slot.x, slot.y, state.selectedSlot === idx || state.hoverSlot === idx || Boolean(hotKeySelectedTower), slot);
     }
   });
 
@@ -22,18 +22,16 @@ function draw() {
     const [x, y] = pointAt(e.progress, e.path);
     drawBookEnemy(e.kind, x, y, performance.now() / 260, e);
     const pct = Math.max(0, e.hp / e.maxHp);
-    const boss = ENEMIES[e.kind]?.boss;
-    const barW = boss ? 76 : 36;
-    const barY = boss ? y - 50 : y - 29;
+    const status = enemyStatusLayout(e.kind, y);
     ctx.fillStyle = "rgba(0,0,0,0.5)";
-    ctx.fillRect(x - barW / 2, barY, barW, boss ? 7 : 5);
+    ctx.fillRect(x - status.barW / 2, status.barY, status.barW, status.barH);
     ctx.fillStyle = pct < 0.35 ? THEME_ROSE : THEME_GREEN;
-    ctx.fillRect(x - barW / 2, barY, barW * pct, boss ? 7 : 5);
-    if (boss) {
+    ctx.fillRect(x - status.barW / 2, status.barY, status.barW * pct, status.barH);
+    if (status.boss) {
       ctx.fillStyle = "#fff8ed";
       ctx.font = "900 11px sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText(ENEMIES[e.kind].name, x, y - 56);
+      ctx.fillText(ENEMIES[e.kind].name, x, status.labelY);
     }
   }
 
@@ -51,6 +49,10 @@ function draw() {
 }
 
 function drawCampusMap(map, alpha = 1) {
+  if (map?.bitmap) {
+    drawBitmapMap(map, alpha);
+    return;
+  }
   if (map?.style === "west") {
     drawWestMap(map, alpha);
     return;
@@ -88,6 +90,27 @@ function drawCampusMap(map, alpha = 1) {
   drawTrees();
   drawLandmarkLabels(map.landmarks);
   ctx.restore();
+}
+
+function drawBitmapMap(map, alpha = 1) {
+  const image = artAssets.maps[map.bitmap];
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = "#95c96d";
+  ctx.fillRect(0, 0, WIDTH, HEIGHT);
+  if (image && image.complete && image.naturalWidth > 0) {
+    drawImageCoverTop(image, 0, 0, WIDTH, HEIGHT);
+  }
+  ctx.restore();
+}
+
+function drawImageCoverTop(image, x, y, w, h) {
+  const scale = Math.max(w / image.naturalWidth, h / image.naturalHeight);
+  const sw = w / scale;
+  const sh = h / scale;
+  const sx = Math.max(0, (image.naturalWidth - sw) / 2);
+  const sy = 0;
+  ctx.drawImage(image, sx, sy, sw, sh, x, y, w, h);
 }
 
 function drawGaoxinMap(map, alpha = 1) {
@@ -878,30 +901,34 @@ function drawIntroBriefing() {
   const warningTitle = targetName === "图书馆" ? "紧急图书馆预警" : "紧急教务预警";
   ctx.save();
   ctx.globalAlpha = alpha;
-  ctx.fillStyle = "rgba(31, 42, 28, 0.28)";
+  ctx.fillStyle = "rgba(238, 248, 228, 0.26)";
   ctx.fillRect(0, 0, WIDTH, HEIGHT);
-  const panel = ctx.createLinearGradient(260, 220, 920, 500);
-  panel.addColorStop(0, "rgba(36, 49, 31, 0.95)");
-  panel.addColorStop(0.58, "rgba(68, 84, 48, 0.9)");
-  panel.addColorStop(1, "rgba(143, 77, 45, 0.86)");
+  const panel = ctx.createLinearGradient(258, 216, 922, 470);
+  panel.addColorStop(0, "rgba(255, 253, 239, 0.94)");
+  panel.addColorStop(0.58, "rgba(239, 248, 226, 0.9)");
+  panel.addColorStop(1, "rgba(255, 246, 216, 0.92)");
   ctx.fillStyle = panel;
-  roundedRect(250, 208, 680, 260, 14, true, false);
-  ctx.strokeStyle = "rgba(255, 247, 223, 0.46)";
+  roundedRect(272, 220, 636, 218, 26, true, false);
+  ctx.strokeStyle = "rgba(190, 170, 98, 0.58)";
   ctx.lineWidth = 2;
-  roundedRect(262, 220, 656, 236, 10, false, true);
-  ctx.fillStyle = "#fff7df";
-  ctx.font = "900 42px sans-serif";
+  roundedRect(284, 232, 612, 194, 20, false, true);
+  ctx.fillStyle = "#17492f";
+  ctx.font = "900 40px sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText(warningTitle, WIDTH / 2, 278);
-  ctx.font = "bold 24px sans-serif";
-  ctx.fillStyle = "#f6d98a";
-  ctx.fillText(`书本怪物正从校园边缘涌向${targetName}`, WIDTH / 2, 326);
-  ctx.font = "18px sans-serif";
-  ctx.fillStyle = "rgba(255, 247, 223, 0.9)";
-  ctx.fillText(`它们会绕开建筑自动寻路。一旦冲进${targetName}，你的 GPA 会被扣除。`, WIDTH / 2, 372);
-  ctx.fillStyle = "rgba(255, 247, 223, 0.76)";
-  ctx.fillText("满绩点 4.3。提示消失后，正式开始防守。", WIDTH / 2, 412);
+  ctx.fillText(warningTitle, WIDTH / 2, 286);
+  ctx.strokeStyle = "rgba(216, 179, 78, 0.7)";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(WIDTH / 2 - 120, 326);
+  ctx.lineTo(WIDTH / 2 + 120, 326);
+  ctx.stroke();
+  ctx.font = "900 24px sans-serif";
+  ctx.fillStyle = "#1d6c45";
+  ctx.fillText(`怪潮正逼近${targetName}`, WIDTH / 2, 362);
+  ctx.font = "16px sans-serif";
+  ctx.fillStyle = "rgba(35, 55, 33, 0.72)";
+  ctx.fillText("提示消失后开始防守", WIDTH / 2, 398);
   ctx.restore();
 }
 
@@ -913,6 +940,10 @@ function drawSampleUnits() {
 }
 
 function drawBuildSlot(x, y, active, slot = {}) {
+  if (slot.marker === "mapPad") {
+    drawMapPadSlot(x, y, active, slot);
+    return;
+  }
   ctx.save();
   ctx.translate(x, y);
   const accent = (slot.bonus && slot.bonus.color) || (slot.custom ? "#7b8a43" : "#2f7d4f");
@@ -963,7 +994,40 @@ function drawBuildSlot(x, y, active, slot = {}) {
   ctx.restore();
 }
 
+function drawMapPadSlot(x, y, active, slot = {}) {
+  const reveal = active || Boolean(hotKeySelectedTower);
+  if (!reveal) return;
+  ctx.save();
+  ctx.translate(x, y);
+  const accent = (slot.bonus && slot.bonus.color) || "#2f7d4f";
+  const radius = Math.max(38, slot.radius || 44);
+  const strong = active;
+  ctx.globalAlpha = strong ? 0.9 : 0.28;
+  ctx.fillStyle = strong ? "rgba(255, 255, 245, 0.08)" : "rgba(255, 255, 245, 0.03)";
+  roundedRect(-radius, -radius * 0.7, radius * 2, radius * 1.4, 14, true, false);
+  ctx.strokeStyle = strong ? accent : "rgba(255, 255, 245, 0.65)";
+  ctx.lineWidth = strong ? 2 : 1.5;
+  ctx.setLineDash([8, 8]);
+  roundedRect(-radius, -radius * 0.7, radius * 2, radius * 1.4, 14, false, true);
+  ctx.setLineDash([]);
+  if (active) {
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = "rgba(255, 255, 245, 0.92)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(0, 0, 8, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
 function drawTowerVisual(kind, x, y, level = 1) {
+  const towerImage = towerImageForLevel(kind, level);
+  if (towerImage && towerImage.complete && towerImage.naturalWidth > 0) {
+    drawTowerSprite(towerImage, kind, x, y, level);
+    return;
+  }
+
   ctx.save();
   ctx.translate(x, y);
   const pulse = Math.sin(performance.now() / 240 + x * 0.01) * 0.5 + 0.5;
@@ -1077,6 +1141,44 @@ function drawTowerVisual(kind, x, y, level = 1) {
   ctx.restore();
 }
 
+function drawTowerSprite(image, kind, x, y, level = 1) {
+  ctx.save();
+  ctx.translate(x, y);
+  const size = towerSpriteSize(kind, level);
+  ctx.fillStyle = "rgba(38, 45, 32, 0.24)";
+  ctx.beginPath();
+  ctx.ellipse(0, 28, size * 0.36, size * 0.13, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.shadowColor = "rgba(28, 35, 24, 0.26)";
+  ctx.shadowBlur = 10;
+  ctx.shadowOffsetY = 5;
+  ctx.drawImage(image, -size / 2, -size * 0.58, size, size);
+  ctx.shadowColor = "transparent";
+
+  ctx.fillStyle = "rgba(255, 255, 245, 0.92)";
+  roundedRect(-20, 36, 40, 16, 8, true, false);
+  ctx.fillStyle = "#263024";
+  ctx.font = "900 10px sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(`Lv.${level}`, 0, 44);
+  ctx.restore();
+}
+
+function towerImageForLevel(kind, level = 1) {
+  const images = artAssets.towers?.[kind];
+  if (Array.isArray(images)) {
+    const index = Math.max(0, Math.min(images.length - 1, Math.floor(level || 1) - 1));
+    return images[index] || images[0];
+  }
+  return images;
+}
+
+function towerSpriteSize(kind, level = 1) {
+  const base = kind === "coffee" ? 74 : kind === "lab" ? 72 : 78;
+  return base + Math.min(2, level - 1) * 4;
+}
+
 function drawBookEnemy(kind, x, y, tick = 0, enemy = {}) {
   const hit = enemy.hitFlash || 0;
   const bob = Math.sin(tick) * 2;
@@ -1093,7 +1195,10 @@ function drawBookEnemy(kind, x, y, tick = 0, enemy = {}) {
     ctx.stroke();
   }
 
-  if (ENEMIES[kind]?.boss) {
+  const enemyImage = artAssets.enemies?.[kind];
+  if (enemyImage && enemyImage.complete && enemyImage.naturalWidth > 0) {
+    drawEnemySprite(enemyImage, kind, tick, enemy);
+  } else if (ENEMIES[kind]?.boss) {
     drawBossBook(kind, tick, enemy);
   } else if (kind === "ddl") {
     drawDdlBook(tick, enemy);
@@ -1114,6 +1219,76 @@ function drawBookEnemy(kind, x, y, tick = 0, enemy = {}) {
     ctx.globalAlpha = 1;
   }
   ctx.restore();
+}
+
+function drawEnemySprite(image, kind, tick, enemy = {}) {
+  const size = enemySpriteSize(kind);
+  ctx.save();
+  ctx.fillStyle = "rgba(33, 30, 24, 0.22)";
+  ctx.beginPath();
+  ctx.ellipse(0, 20, size * 0.24, size * 0.09, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  if (kind === "ddl") {
+    const fuse = Math.max(0, enemy.ddlFuse ?? 1);
+    const fuseMax = Math.max(1, enemy.ddlFuseMax ?? 1);
+    const danger = 1 - Math.min(1, fuse / fuseMax);
+    ctx.fillStyle = `rgba(255, 74, 64, ${0.12 + danger * 0.18 + Math.sin(tick * 5) * 0.04})`;
+    ctx.beginPath();
+    ctx.arc(0, 1, size * (0.32 + danger * 0.08), 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.shadowColor = "rgba(33, 30, 24, 0.24)";
+  ctx.shadowBlur = 8;
+  ctx.shadowOffsetY = 4;
+  ctx.drawImage(image, -size / 2, -size * 0.64, size, size);
+  ctx.shadowColor = "transparent";
+
+  if (kind === "ddl") {
+    const fuse = Math.max(0, enemy.ddlFuse ?? 1);
+    const fuseMax = Math.max(1, enemy.ddlFuseMax ?? 1);
+    const danger = 1 - Math.min(1, fuse / fuseMax);
+    ctx.fillStyle = danger > 0.65 ? "#f43f5e" : "#fbbf24";
+    ctx.beginPath();
+    ctx.arc(18, -28, 9, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(88, 40, 24, 0.36)";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.fillStyle = "#fff8ed";
+    ctx.font = "900 9px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(Math.ceil(fuse), 18, -28);
+  }
+  ctx.restore();
+}
+
+function enemySpriteSize(kind) {
+  if (ENEMIES[kind]?.boss) return 96;
+  if (kind === "report") return 62;
+  if (kind === "ddl") return 68;
+  if (kind === "ppt") return 58;
+  if (kind === "bug") return 54;
+  return 54;
+}
+
+function enemyStatusLayout(kind, y) {
+  const boss = Boolean(ENEMIES[kind]?.boss);
+  const image = artAssets.enemies?.[kind];
+  const hasSprite = image && image.complete && image.naturalWidth > 0;
+  const size = hasSprite ? enemySpriteSize(kind) : boss ? 76 : 42;
+  const barW = boss ? Math.max(76, size * 0.84) : 36;
+  const barH = boss ? 7 : 5;
+  const barY = hasSprite ? y - size * 0.64 - (boss ? 14 : 7) : boss ? y - 50 : y - 29;
+  return {
+    boss,
+    barW,
+    barH,
+    barY,
+    labelY: barY - 8,
+  };
 }
 
 function drawBossBook(kind, tick, enemy = {}) {
@@ -1355,10 +1530,9 @@ function drawProjectiles() {
 }
 
 function drawMathProjectile(p, head, t) {
-  ctx.strokeStyle = "rgba(245, 241, 223, 0.9)";
-  ctx.lineWidth = 2.5;
-  line([p.x, p.y - 8], head);
-  ctx.fillStyle = "#f5f1df";
+  drawProjectileTrail(p, head, t, "56, 189, 248", 2.5);
+  drawProjectileSprite(artAssets.effects?.bulletBlue, p, head, 34, 0.95, 0, "#38bdf8");
+  ctx.fillStyle = "rgba(245, 251, 255, 0.88)";
   ctx.font = "bold 13px serif";
   ctx.textAlign = "center";
   const glyphs = ["∫", "Σ", "dx"];
@@ -1369,31 +1543,13 @@ function drawMathProjectile(p, head, t) {
 }
 
 function drawPhysicsProjectile(p, head, t) {
-  ctx.strokeStyle = "#b9f4ff";
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.moveTo(p.x, p.y - 8);
-  for (let i = 1; i <= 5; i += 1) {
-    const k = i / 5 * t;
-    const jitter = (i % 2 ? 8 : -8) * Math.sin(t * Math.PI);
-    ctx.lineTo(p.x + (p.tx - p.x) * k + jitter, p.y + (p.ty - p.y) * k);
-  }
-  ctx.lineTo(head[0], head[1]);
-  ctx.stroke();
-  ctx.fillStyle = "rgba(185,244,255,0.45)";
-  ctx.beginPath();
-  ctx.arc(head[0], head[1], 8, 0, Math.PI * 2);
-  ctx.fill();
+  drawProjectileTrail(p, head, t, "251, 146, 60", 3.2, 0.9);
+  drawProjectileSprite(artAssets.effects?.bulletOrange, p, head, 34, 0.96, 0, "#fb923c");
 }
 
 function drawLabProjectile(p, head, t) {
-  ctx.fillStyle = "#9d60bd";
-  ctx.beginPath();
-  ctx.arc(head[0], head[1], 7, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = "rgba(157,96,189,0.45)";
-  ctx.lineWidth = 5;
-  line([p.x, p.y - 12], head);
+  drawProjectileTrail(p, head, t, "52, 211, 153", 4.8, 0.52);
+  drawProjectileSprite(artAssets.effects?.bulletGreen, p, head, 30, 0.98, Math.sin(t * Math.PI) * 0.16, "#34d399");
 }
 
 function drawCoffeeProjectile(p, head, t) {
@@ -1403,10 +1559,155 @@ function drawCoffeeProjectile(p, head, t) {
   ctx.moveTo(p.x, p.y - 14);
   ctx.quadraticCurveTo((p.x + p.tx) / 2, p.y - 42, head[0], head[1]);
   ctx.stroke();
-  ctx.fillStyle = "#8a4d2e";
+  drawEffectSprite(artAssets.effects?.slowWave, head[0], head[1], 34 + Math.sin(t * Math.PI) * 6, 0.82, 0);
+}
+
+function drawProjectileTrail(p, head, t, rgb, width, alpha = 0.72) {
+  const start = [p.x, p.y - 10];
+  const tail = [
+    p.x + (p.tx - p.x) * Math.max(0, t - 0.24),
+    p.y + (p.ty - p.y) * Math.max(0, t - 0.24),
+  ];
+  ctx.save();
+  ctx.strokeStyle = `rgba(${rgb},${alpha})`;
+  ctx.lineWidth = width;
+  ctx.lineCap = "round";
   ctx.beginPath();
-  ctx.arc(head[0], head[1], 6, 0, Math.PI * 2);
+  ctx.moveTo(start[0], start[1]);
+  ctx.lineTo(tail[0], tail[1]);
+  ctx.lineTo(head[0], head[1]);
+  ctx.stroke();
+  ctx.strokeStyle = `rgba(255,255,245,${Math.min(0.7, alpha)})`;
+  ctx.lineWidth = Math.max(1.2, width * 0.34);
+  ctx.beginPath();
+  ctx.moveTo(tail[0], tail[1]);
+  ctx.lineTo(head[0], head[1]);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawProjectileSprite(image, p, head, size, alpha = 1, extraRotate = 0, fallbackColor = "#fff8ed") {
+  const angle = Math.atan2(p.ty - p.y, p.tx - p.x);
+  if (drawEffectSprite(image, head[0], head[1], size, alpha, angle + extraRotate)) return;
+  ctx.save();
+  ctx.fillStyle = fallbackColor;
+  ctx.beginPath();
+  ctx.arc(head[0], head[1], size * 0.18, 0, Math.PI * 2);
   ctx.fill();
+  ctx.restore();
+}
+
+function drawEffectSprite(image, x, y, size, alpha = 1, rotation = 0) {
+  if (!image || !image.complete || image.naturalWidth <= 0) return false;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(rotation);
+  ctx.globalAlpha *= alpha;
+  ctx.drawImage(image, -size / 2, -size / 2, size, size);
+  ctx.restore();
+  return true;
+}
+
+function drawTowerImpact(effect, t) {
+  const fade = 1 - t;
+  const radius = effect.radius || 24;
+  if (effect.tower === "lab") {
+    drawEffectSprite(artAssets.effects?.bulletGreen, effect.x, effect.y, 26 + t * 18, 0.86 * fade, -t * 0.8);
+    ctx.strokeStyle = `rgba(52, 211, 153, ${0.78 * fade})`;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(effect.x, effect.y, 10 + t * Math.max(34, radius), 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = `rgba(52, 211, 153, ${0.12 * fade})`;
+    ctx.beginPath();
+    ctx.arc(effect.x, effect.y, 8 + t * Math.max(30, radius), 0, Math.PI * 2);
+    ctx.fill();
+    return;
+  }
+
+  if (effect.tower === "coffee") {
+    drawEffectSprite(artAssets.effects?.slowWave, effect.x, effect.y, 34 + t * 42, 0.82 * fade, 0);
+    ctx.strokeStyle = `rgba(128, 76, 38, ${0.55 * fade})`;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(effect.x, effect.y, 12 + t * 30, 0, Math.PI * 2);
+    ctx.stroke();
+    return;
+  }
+
+  if (effect.tower === "math") {
+    drawEffectSprite(artAssets.effects?.bulletBlue, effect.x, effect.y, 24 + t * 14, 0.78 * fade, -Math.PI / 4);
+    ctx.strokeStyle = `rgba(56, 189, 248, ${0.72 * fade})`;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.arc(effect.x, effect.y, 8 + t * 24, 0, Math.PI * 2);
+    ctx.stroke();
+    return;
+  }
+
+  drawEffectSprite(artAssets.effects?.hitSpark, effect.x, effect.y, 38 + t * 18, 0.92 * fade, t * 0.8);
+  ctx.strokeStyle = `rgba(251, 146, 60, ${0.55 * fade})`;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(effect.x, effect.y, 6 + t * 22, 0, Math.PI * 2);
+  ctx.stroke();
+}
+
+function drawTowerBuildEffect(effect, t) {
+  const fade = 1 - t;
+  drawEffectSprite(artAssets.effects?.hitSpark, effect.x, effect.y - 8, 34 + t * 12, 0.55 * fade, t * 0.6);
+  ctx.fillStyle = `rgba(255, 244, 190, ${0.38 * fade})`;
+  for (let i = 0; i < 6; i += 1) {
+    const a = i * Math.PI * 2 / 6;
+    ctx.beginPath();
+    ctx.arc(effect.x + Math.cos(a) * (12 + t * 18), effect.y + 18 + Math.sin(a) * 7, 3.2 * fade, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawTowerUpgradeEffect(effect, t) {
+  const fade = 1 - t;
+  const color = towerEffectColor(effect.tower);
+  ctx.save();
+  ctx.strokeStyle = `rgba(${color}, ${0.7 * fade})`;
+  ctx.lineWidth = 3;
+  ctx.lineCap = "round";
+  for (let i = 0; i < 3; i += 1) {
+    const x = effect.x + (i - 1) * 13;
+    const y = effect.y + 22 - t * (34 + i * 5);
+    ctx.beginPath();
+    ctx.moveTo(x, y + 10);
+    ctx.lineTo(x, y - 4);
+    ctx.lineTo(x - 5, y + 2);
+    ctx.moveTo(x, y - 4);
+    ctx.lineTo(x + 5, y + 2);
+    ctx.stroke();
+  }
+  ctx.fillStyle = `rgba(255, 255, 245, ${0.45 * fade})`;
+  ctx.beginPath();
+  ctx.arc(effect.x, effect.y - 16 - t * 18, 5 * fade, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawTowerSellEffect(effect, t) {
+  const fade = 1 - t;
+  ctx.fillStyle = `rgba(92, 86, 76, ${0.42 * fade})`;
+  for (let i = 0; i < 8; i += 1) {
+    const a = i * Math.PI * 2 / 8;
+    const dist = 10 + t * 24;
+    ctx.beginPath();
+    ctx.arc(effect.x + Math.cos(a) * dist, effect.y + Math.sin(a) * dist * 0.62, 3.4 * fade, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function towerEffectColor(kind) {
+  if (kind === "math") return "56, 189, 248";
+  if (kind === "physics") return "251, 146, 60";
+  if (kind === "lab") return "52, 211, 153";
+  if (kind === "coffee") return "251, 191, 36";
+  return "255, 244, 190";
 }
 
 function drawEffects() {
@@ -1419,16 +1720,7 @@ function drawEffects() {
       ctx.arc(effect.x, effect.y, 12 + t * 18, 0, Math.PI * 2);
       ctx.stroke();
     } else if (effect.kind === "impact") {
-      const color = effect.tower === "lab" ? "157,96,189" : effect.tower === "coffee" ? "128,76,38" : effect.tower === "physics" ? "185,244,255" : "245,241,223";
-      ctx.fillStyle = `rgba(${color},${0.28 * (1 - t)})`;
-      ctx.beginPath();
-      ctx.arc(effect.x, effect.y, 12 + t * (effect.radius || 24), 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = `rgba(${color},${0.75 * (1 - t)})`;
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.arc(effect.x, effect.y, 8 + t * (effect.radius || 24), 0, Math.PI * 2);
-      ctx.stroke();
+      drawTowerImpact(effect, t);
     } else if (effect.kind === "defeat") {
       ctx.fillStyle = `rgba(255, 244, 198, ${0.55 * (1 - t)})`;
       for (let i = 0; i < 7; i += 1) {
@@ -1485,6 +1777,12 @@ function drawEffects() {
       ctx.beginPath();
       ctx.arc(effect.x, effect.y, 26, 0, Math.PI * 2);
       ctx.fill();
+    } else if (effect.kind === "tower-build") {
+      drawTowerBuildEffect(effect, t);
+    } else if (effect.kind === "tower-upgrade") {
+      drawTowerUpgradeEffect(effect, t);
+    } else if (effect.kind === "tower-sell") {
+      drawTowerSellEffect(effect, t);
     } else if (effect.kind === "boss-summon") {
       ctx.strokeStyle = `rgba(251, 191, 36, ${0.86 * (1 - t)})`;
       ctx.lineWidth = 4;

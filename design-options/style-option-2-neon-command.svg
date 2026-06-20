@@ -1,0 +1,161 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="720" viewBox="0 0 1180 720" role="img" aria-labelledby="title desc">
+  <title id="title">方案二：霓虹指挥屏</title>
+  <desc id="desc">深色战术屏风格，所有地块、道路、建筑、部署点与特效均用确定坐标绘制，可在代码中一比一复刻。</desc>
+  <defs>
+    <linearGradient id="ground2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#071317"/>
+      <stop offset="0.55" stop-color="#10282e"/>
+      <stop offset="1" stop-color="#071016"/>
+    </linearGradient>
+    <filter id="cyanGlow2" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="redGlow2" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="1180" height="720" fill="url(#ground2)"/>
+  <g id="grid" stroke="#2fd6e3" stroke-width="1" opacity="0.13">
+    <path d="M0 60 H1180 M0 120 H1180 M0 180 H1180 M0 240 H1180 M0 300 H1180 M0 360 H1180 M0 420 H1180 M0 480 H1180 M0 540 H1180 M0 600 H1180 M0 660 H1180"/>
+    <path d="M70 0 V720 M140 0 V720 M210 0 V720 M280 0 V720 M350 0 V720 M420 0 V720 M490 0 V720 M560 0 V720 M630 0 V720 M700 0 V720 M770 0 V720 M840 0 V720 M910 0 V720 M980 0 V720 M1050 0 V720 M1120 0 V720"/>
+  </g>
+  <path d="M60 54 L1122 34 L1148 664 L42 682 Z" fill="#12333a" stroke="#2fd6e3" stroke-width="2" opacity="0.32"/>
+
+  <g id="roads" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <g stroke="#031014" stroke-width="42" opacity="0.88">
+      <polyline points="0,510 122,488 242,438 350,402 460,384 540,354 596,318"/>
+      <polyline points="0,288 138,268 258,242 360,232 454,274 536,300 596,318"/>
+      <polyline points="612,0 606,74 592,156 592,232 596,318"/>
+      <polyline points="1180,420 1040,406 918,384 806,354 700,332 596,318"/>
+      <polyline points="1180,180 1030,202 902,250 778,294 680,314 596,318"/>
+      <polyline points="252,720 306,628 382,532 468,448 540,360 596,318"/>
+    </g>
+    <g stroke="#2fd6e3" stroke-width="24" opacity="0.5" filter="url(#cyanGlow2)">
+      <polyline points="0,510 122,488 242,438 350,402 460,384 540,354 596,318"/>
+      <polyline points="0,288 138,268 258,242 360,232 454,274 536,300 596,318"/>
+      <polyline points="612,0 606,74 592,156 592,232 596,318"/>
+      <polyline points="1180,420 1040,406 918,384 806,354 700,332 596,318"/>
+      <polyline points="1180,180 1030,202 902,250 778,294 680,314 596,318"/>
+      <polyline points="252,720 306,628 382,532 468,448 540,360 596,318"/>
+    </g>
+    <g stroke="#e7fbff" stroke-width="7">
+      <polyline points="0,510 122,488 242,438 350,402 460,384 540,354 596,318"/>
+      <polyline points="0,288 138,268 258,242 360,232 454,274 536,300 596,318"/>
+      <polyline points="612,0 606,74 592,156 592,232 596,318"/>
+      <polyline points="1180,420 1040,406 918,384 806,354 700,332 596,318"/>
+      <polyline points="1180,180 1030,202 902,250 778,294 680,314 596,318"/>
+      <polyline points="252,720 306,628 382,532 468,448 540,360 596,318"/>
+    </g>
+    <g stroke="#071317" stroke-width="2" stroke-dasharray="9 14" opacity="0.8">
+      <polyline points="0,510 122,488 242,438 350,402 460,384 540,354 596,318"/>
+      <polyline points="0,288 138,268 258,242 360,232 454,274 536,300 596,318"/>
+      <polyline points="612,0 606,74 592,156 592,232 596,318"/>
+      <polyline points="1180,420 1040,406 918,384 806,354 700,332 596,318"/>
+      <polyline points="1180,180 1030,202 902,250 778,294 680,314 596,318"/>
+      <polyline points="252,720 306,628 382,532 468,448 540,360 596,318"/>
+    </g>
+  </g>
+
+  <g id="block-models" font-family="Microsoft YaHei, Noto Sans SC, sans-serif" text-anchor="middle" font-weight="900">
+    <g transform="translate(98 374)">
+      <polygon points="0,34 28,0 242,0 270,34 248,124 20,124" fill="#193f48" stroke="#5cf2ff" stroke-width="2"/>
+      <rect x="32" y="22" width="206" height="68" rx="4" fill="#20505a" stroke="#9ffbff"/>
+      <text x="135" y="63" font-size="17" fill="#cfffff">图书馆</text>
+    </g>
+    <g transform="translate(686 78)">
+      <polygon points="0,38 34,0 358,0 392,38 358,128 34,128" fill="#372144" stroke="#bd8cff" stroke-width="2"/>
+      <rect x="44" y="24" width="304" height="72" rx="4" fill="#4b2e61" stroke="#e7d4ff"/>
+      <text x="196" y="66" font-size="18" fill="#f4eaff">第一教学楼</text>
+    </g>
+    <g transform="translate(846 446)">
+      <polygon points="0,30 24,0 218,0 242,30 218,118 22,118" fill="#433315" stroke="#ffd166" stroke-width="2"/>
+      <rect x="34" y="20" width="174" height="72" rx="4" fill="#654c20" stroke="#ffe2a3"/>
+      <text x="121" y="63" font-size="17" fill="#fff2c9">食堂</text>
+    </g>
+    <g transform="translate(796 310)">
+      <polygon points="0,32 24,0 174,0 198,32 174,128 22,128" fill="#183b34" stroke="#72ffc0" stroke-width="2"/>
+      <rect x="32" y="22" width="134" height="78" rx="4" fill="#215448" stroke="#baffde"/>
+      <text x="99" y="67" font-size="16" fill="#dcffef">少年班</text>
+    </g>
+    <g transform="translate(486 496)">
+      <polygon points="0,26 18,0 142,0 160,26 142,94 18,94" fill="#4a1e24" stroke="#ff5d73" stroke-width="2"/>
+      <rect x="30" y="18" width="100" height="50" rx="4" fill="#6d2831" stroke="#ffb2bd"/>
+      <text x="80" y="50" font-size="14" fill="#ffe3e6">教务处</text>
+    </g>
+  </g>
+
+  <g id="target" filter="url(#cyanGlow2)" font-family="Microsoft YaHei, Noto Sans SC, sans-serif" text-anchor="middle" font-weight="900">
+    <circle cx="596" cy="318" r="78" fill="#2fd6e3" opacity="0.1"/>
+    <circle cx="596" cy="318" r="55" fill="#071317" stroke="#2fd6e3" stroke-width="5"/>
+    <path d="M596 270 L636 318 L596 366 L556 318 Z" fill="#0f3942" stroke="#e7fbff" stroke-width="3"/>
+    <text x="596" y="323" font-size="15" fill="#e7fbff">核心</text>
+  </g>
+
+  <g id="tower-slots" fill="#071317" stroke="#e7fbff" stroke-width="3" filter="url(#cyanGlow2)">
+    <circle cx="254" cy="386" r="16"/>
+    <circle cx="316" cy="398" r="16"/>
+    <circle cx="468" cy="332" r="16"/>
+    <circle cx="646" cy="312" r="16"/>
+    <circle cx="820" cy="390" r="16"/>
+    <circle cx="918" cy="286" r="16"/>
+    <circle cx="1000" cy="512" r="16"/>
+    <circle cx="212" cy="604" r="16"/>
+    <circle cx="360" cy="232" r="16"/>
+    <circle cx="760" cy="514" r="16"/>
+    <circle cx="1042" cy="338" r="16"/>
+    <circle cx="530" cy="438" r="16"/>
+  </g>
+
+  <g id="towers" filter="url(#cyanGlow2)">
+    <g transform="translate(468 332)">
+      <circle r="48" fill="#2fd6e3" opacity="0.12"/>
+      <path d="M0 -42 L32 -14 L20 28 L-20 28 L-32 -14 Z" fill="#113640" stroke="#5cf2ff" stroke-width="4"/>
+      <circle r="12" fill="#e7fbff"/>
+    </g>
+    <g transform="translate(820 390)">
+      <circle r="45" fill="#72ffc0" opacity="0.12"/>
+      <path d="M-32 -8 L0 -34 L32 -8 L20 30 L-20 30 Z" fill="#184c3b" stroke="#72ffc0" stroke-width="4"/>
+      <circle r="10" fill="#d9fff0"/>
+    </g>
+    <g transform="translate(530 438)">
+      <circle r="58" fill="#bd8cff" opacity="0.1"/>
+      <path d="M-24 -30 H24 L34 10 L0 36 L-34 10 Z" fill="#32204a" stroke="#bd8cff" stroke-width="4"/>
+      <circle cy="2" r="14" fill="#f4eaff"/>
+    </g>
+  </g>
+
+  <g id="attacks" fill="none" stroke-linecap="round">
+    <path d="M468 332 C508 292 548 292 584 312" stroke="#5cf2ff" stroke-width="7" filter="url(#cyanGlow2)"/>
+    <path d="M820 390 C768 352 724 346 690 334" stroke="#72ffc0" stroke-width="6" stroke-dasharray="7 12" filter="url(#cyanGlow2)"/>
+    <circle cx="530" cy="438" r="86" stroke="#bd8cff" stroke-width="5" opacity="0.55" filter="url(#cyanGlow2)"/>
+  </g>
+
+  <g id="enemies" font-family="Microsoft YaHei, Noto Sans SC, sans-serif" text-anchor="middle" font-weight="900" filter="url(#redGlow2)">
+    <g transform="translate(426 392)">
+      <path d="M0 -24 L28 0 L0 24 L-28 0 Z" fill="#ff8a3d" stroke="#fff1d8" stroke-width="3"/>
+      <text y="5" font-size="12" fill="#26130a">题</text>
+    </g>
+    <g transform="translate(732 340)">
+      <path d="M0 -28 L30 -10 L22 24 L-22 24 L-30 -10 Z" fill="#ff3d57" stroke="#ffe1e6" stroke-width="3"/>
+      <text y="5" font-size="11" fill="#2b0810">DDL</text>
+    </g>
+    <g transform="translate(598 224)">
+      <path d="M0 -34 L36 -14 L28 32 L-28 32 L-36 -14 Z" fill="#16d6b0" stroke="#d9fff6" stroke-width="3"/>
+      <text y="5" font-size="12" fill="#06261f">盾</text>
+    </g>
+  </g>
+
+  <g id="legend" font-family="Microsoft YaHei, Noto Sans SC, sans-serif">
+    <rect x="22" y="22" width="306" height="78" rx="6" fill="#071317" opacity="0.88" stroke="#2fd6e3" stroke-width="2"/>
+    <text x="42" y="52" font-size="22" font-weight="900" fill="#e7fbff">方案二：霓虹指挥屏</text>
+    <text x="42" y="78" font-size="13" font-weight="700" fill="#92f6ff">深色科技感 · 高对比路线 · 战斗特效最强</text>
+  </g>
+</svg>
