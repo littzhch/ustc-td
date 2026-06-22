@@ -284,41 +284,34 @@ function updateTowers(dt, now) {
     const targets = findTargets(tower, now, tower.level);
     if (!targets.length) continue;
     tower.cooldownLeft = (TOWERS[tower.kind].cooldown * Math.pow(0.88, tower.level - 1)) / (state.mods.speed * towerBonus(tower, "speed") * towerSpeedModifier(tower, now));
-    targets.forEach(target => fireTower(tower, target, now));
+    targets.forEach(target => fireTower(tower, target));
   }
 }
 
-function fireTower(tower, target, now) {
+function fireTower(tower, target) {
   const targetPos = pointAt(target.progress, target.path);
+  const damage = TOWERS[tower.kind].damage * (1 + 0.28 * (tower.level - 1)) * state.mods.damage * towerBonus(tower, "damage") * towerDamageModifier(tower, target);
+  const slow = (TOWERS[tower.kind].slow || 0) + state.mods.globalSlow;
   state.projectiles.push({
     kind: tower.kind,
     x: tower.x,
     y: tower.y,
     tx: targetPos[0],
     ty: targetPos[1],
+    target,
+    sourceTower: tower,
+    damage,
+    slow,
+    slowDuration: 1.8,
+    canDouble: tower.kind === "physics",
+    doubleChance: state.mods.physicsDoubleChance || 0,
+    doubleDamage: damage * 0.55,
     life: 0.24,
     maxLife: 0.24,
     color: TOWERS[tower.kind].color,
     splash: tower.kind === "lab" ? labSplashRadius() : 0,
   });
   state.effects.push({ kind: "muzzle", tower: tower.kind, x: tower.x, y: tower.y, life: 0.2, maxLife: 0.2 });
-  const damage = TOWERS[tower.kind].damage * (1 + 0.28 * (tower.level - 1)) * state.mods.damage * towerBonus(tower, "damage") * towerDamageModifier(tower, target);
-  if (tower.kind === "lab") {
-    for (const enemy of [...state.enemies]) {
-      if (distance(pointAt(enemy.progress, enemy.path), targetPos) <= labSplashRadius()) damageEnemy(enemy, damage * 0.78, tower);
-    }
-  } else {
-    damageEnemy(target, damage, tower);
-    if (tower.kind === "physics" && Math.random() < state.mods.physicsDoubleChance && state.enemies.includes(target)) {
-      damageEnemy(target, damage * 0.55, tower);
-      state.floating.push({ x: tower.x, y: tower.y - 22, text: "连点", color: THEME_BLUE, life: 0.55 });
-    }
-  }
-  const slow = (TOWERS[tower.kind].slow || 0) + state.mods.globalSlow;
-  if (slow) {
-    target.slowFactor = Math.max(0.3, 1 - slow);
-    target.slowUntil = now + 1.8;
-  }
 }
 
 function damageEnemy(enemy, amount, sourceTower = null) {
@@ -580,12 +573,45 @@ function triggerLowGpaResearch(now) {
   }
 }
 
+function projectileImpactPoint(projectile) {
+  if (projectile.target && state.enemies.includes(projectile.target)) {
+    return pointAt(projectile.target.progress, projectile.target.path);
+  }
+  return [projectile.tx, projectile.ty];
+}
+
+function resolveProjectileHit(projectile, impactPoint) {
+  const target = projectile.target;
+  const sourceTower = projectile.sourceTower || null;
+  if (projectile.kind === "lab") {
+    const radius = projectile.splash || 0;
+    for (const enemy of [...state.enemies]) {
+      if (distance(pointAt(enemy.progress, enemy.path), impactPoint) <= radius) {
+        damageEnemy(enemy, projectile.damage * 0.78, sourceTower);
+      }
+    }
+  } else if (target && state.enemies.includes(target)) {
+    damageEnemy(target, projectile.damage, sourceTower);
+    if (projectile.canDouble && projectile.doubleChance > 0 && state.enemies.includes(target) && Math.random() < projectile.doubleChance) {
+      damageEnemy(target, projectile.doubleDamage, sourceTower);
+      state.floating.push({ x: projectile.x, y: projectile.y - 22, text: "连点", color: THEME_BLUE, life: 0.55 });
+    }
+  }
+  if (projectile.slow && target && state.enemies.includes(target)) {
+    const now = performance.now() / 1000;
+    target.slowFactor = Math.max(0.3, 1 - projectile.slow);
+    target.slowUntil = now + (projectile.slowDuration || 1.8);
+  }
+}
+
 function updateProjectiles(dt) {
   const remaining = [];
   for (const p of state.projectiles) {
     p.life -= dt;
     if (p.life <= 0) {
-      state.effects.push({ kind: "impact", tower: p.kind, x: p.tx, y: p.ty, radius: p.splash || 0, life: 0.34, maxLife: 0.34 });
+      const impactPoint = projectileImpactPoint(p);
+      resolveProjectileHit(p, impactPoint);
+      state.effects.push({ kind: "impact", tower: p.kind, x: impactPoint[0], y: impactPoint[1], radius: p.splash || 0, life: 0.34, maxLife: 0.34 });
     } else {
       remaining.push(p);
     }

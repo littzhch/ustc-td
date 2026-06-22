@@ -1521,52 +1521,53 @@ function drawFace(x, y, angry) {
 function drawProjectiles() {
   for (const p of state.projectiles) {
     const t = 1 - p.life / p.maxLife;
-    const head = [p.x + (p.tx - p.x) * t, p.y + (p.ty - p.y) * t];
-    if (p.kind === "math") drawMathProjectile(p, head, t);
-    else if (p.kind === "physics") drawPhysicsProjectile(p, head, t);
-    else if (p.kind === "lab") drawLabProjectile(p, head, t);
-    else if (p.kind === "coffee") drawCoffeeProjectile(p, head, t);
+    const impactPoint = projectileImpactPoint(p);
+    const head = [p.x + (impactPoint[0] - p.x) * t, p.y + (impactPoint[1] - p.y) * t];
+    if (p.kind === "math") drawMathProjectile(p, head, t, impactPoint);
+    else if (p.kind === "physics") drawPhysicsProjectile(p, head, t, impactPoint);
+    else if (p.kind === "lab") drawLabProjectile(p, head, t, impactPoint);
+    else if (p.kind === "coffee") drawCoffeeProjectile(p, head, t, impactPoint);
   }
 }
 
-function drawMathProjectile(p, head, t) {
-  drawProjectileTrail(p, head, t, "56, 189, 248", 2.5);
-  drawProjectileSprite(artAssets.effects?.bulletBlue, p, head, 34, 0.95, 0, "#38bdf8");
+function drawMathProjectile(p, head, t, impactPoint) {
+  drawProjectileTrail(p, head, t, impactPoint, "56, 189, 248", 2.5);
+  drawProjectileSprite(artAssets.effects?.bulletBlue, p, head, impactPoint, 34, 0.95, 0, "#38bdf8");
   ctx.fillStyle = "rgba(245, 251, 255, 0.88)";
   ctx.font = "bold 13px serif";
   ctx.textAlign = "center";
   const glyphs = ["∫", "Σ", "dx"];
   glyphs.forEach((g, i) => {
     const k = Math.min(1, Math.max(0, t - i * 0.12));
-    ctx.fillText(g, p.x + (p.tx - p.x) * k, p.y + (p.ty - p.y) * k - 12 + i * 7);
+    ctx.fillText(g, p.x + (impactPoint[0] - p.x) * k, p.y + (impactPoint[1] - p.y) * k - 12 + i * 7);
   });
 }
 
-function drawPhysicsProjectile(p, head, t) {
-  drawProjectileTrail(p, head, t, "251, 146, 60", 3.2, 0.9);
-  drawProjectileSprite(artAssets.effects?.bulletOrange, p, head, 34, 0.96, 0, "#fb923c");
+function drawPhysicsProjectile(p, head, t, impactPoint) {
+  drawProjectileTrail(p, head, t, impactPoint, "251, 146, 60", 3.2, 0.9);
+  drawProjectileSprite(artAssets.effects?.bulletOrange, p, head, impactPoint, 34, 0.96, 0, "#fb923c");
 }
 
-function drawLabProjectile(p, head, t) {
-  drawProjectileTrail(p, head, t, "52, 211, 153", 4.8, 0.52);
-  drawProjectileSprite(artAssets.effects?.bulletGreen, p, head, 30, 0.98, Math.sin(t * Math.PI) * 0.16, "#34d399");
+function drawLabProjectile(p, head, t, impactPoint) {
+  drawProjectileTrail(p, head, t, impactPoint, "52, 211, 153", 4.8, 0.52);
+  drawProjectileSprite(artAssets.effects?.bulletGreen, p, head, impactPoint, 30, 0.98, Math.sin(t * Math.PI) * 0.16, "#34d399");
 }
 
-function drawCoffeeProjectile(p, head, t) {
+function drawCoffeeProjectile(p, head, t, impactPoint) {
   ctx.strokeStyle = "rgba(128,76,38,0.72)";
   ctx.lineWidth = 5;
   ctx.beginPath();
   ctx.moveTo(p.x, p.y - 14);
-  ctx.quadraticCurveTo((p.x + p.tx) / 2, p.y - 42, head[0], head[1]);
+  ctx.quadraticCurveTo((p.x + impactPoint[0]) / 2, p.y - 42, head[0], head[1]);
   ctx.stroke();
   drawEffectSprite(artAssets.effects?.slowWave, head[0], head[1], 34 + Math.sin(t * Math.PI) * 6, 0.82, 0);
 }
 
-function drawProjectileTrail(p, head, t, rgb, width, alpha = 0.72) {
+function drawProjectileTrail(p, head, t, impactPoint, rgb, width, alpha = 0.72) {
   const start = [p.x, p.y - 10];
   const tail = [
-    p.x + (p.tx - p.x) * Math.max(0, t - 0.24),
-    p.y + (p.ty - p.y) * Math.max(0, t - 0.24),
+    p.x + (impactPoint[0] - p.x) * Math.max(0, t - 0.24),
+    p.y + (impactPoint[1] - p.y) * Math.max(0, t - 0.24),
   ];
   ctx.save();
   ctx.strokeStyle = `rgba(${rgb},${alpha})`;
@@ -1586,8 +1587,8 @@ function drawProjectileTrail(p, head, t, rgb, width, alpha = 0.72) {
   ctx.restore();
 }
 
-function drawProjectileSprite(image, p, head, size, alpha = 1, extraRotate = 0, fallbackColor = "#fff8ed") {
-  const angle = Math.atan2(p.ty - p.y, p.tx - p.x);
+function drawProjectileSprite(image, p, head, impactPoint, size, alpha = 1, extraRotate = 0, fallbackColor = "#fff8ed") {
+  const angle = Math.atan2(impactPoint[1] - p.y, impactPoint[0] - p.x);
   if (drawEffectSprite(image, head[0], head[1], size, alpha, angle + extraRotate)) return;
   ctx.save();
   ctx.fillStyle = fallbackColor;
