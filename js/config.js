@@ -417,11 +417,11 @@ const DIFFICULTIES = {
     credits: 1.45,
     startResource: 45,
     spawnInterval: 1.05,
-    spawnMin: 0.48,
-    hpGrowth: 0.045,
-    hpLateGrowth: 0.018,
+    spawnMin: 0.44,
+    hpGrowth: 0.05,
+    hpLateGrowth: 0.024,
     speedGrowth: 0.04,
-    speedLateGrowth: 0.026,
+    speedLateGrowth: 0.03,
     xp: 0.92,
     endless: true,
   },
@@ -431,8 +431,8 @@ const WAVE_TABLE = [
   repeat("homework", 4),
   [...repeat("homework", 4), ...repeat("ddl", 2)],
   [...repeat("report", 1), ...repeat("homework", 5)],
-  [...repeat("ddl", 4), ...repeat("homework", 4)],
-  [...repeat("ppt", 2), ...repeat("homework", 5)],
+  [...repeat("ddl", 4), ...repeat("report", 1), ...repeat("homework", 4)],
+  [...repeat("ppt", 2), ...repeat("report", 1), ...repeat("ddl", 1), ...repeat("homework", 5)],
 ];
 
 const BOSS_SEQUENCE = ["boss_midterm", "boss_ddl", "boss_lab", "boss_thesis"];
