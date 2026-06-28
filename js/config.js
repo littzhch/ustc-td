@@ -191,8 +191,14 @@ const MAPS = [
     buildings: [],
     blockers: [],
     slots: [
+      { ...makeTowerSlot([372, 248], "第一教学楼", false), marker: "mapPad", radius: 42 },
+      { ...makeTowerSlot([560, 318], "中科大星", true), marker: "mapPad", radius: 44 },
       { ...makeTowerSlot([326, 454], "第一教学楼", false), marker: "mapPad", radius: 50, bonus: { name: "主路联防", desc: "射程 +35%，覆盖校园主干道。", range: 1.35, color: "#2f7d4f" } },
+      { ...makeTowerSlot([604, 520], "行政楼", false), marker: "mapPad", radius: 42 },
       { ...makeTowerSlot([740, 480], "食堂", false), marker: "mapPad", radius: 50, bonus: { name: "主路联防", desc: "射程 +35%，覆盖校园主干道。", range: 1.35, color: "#2f7d4f" } },
+      { ...makeTowerSlot([860, 540], "食堂", false), marker: "mapPad", radius: 42 },
+      { ...makeTowerSlot([986, 612], "水上报告厅", false), marker: "mapPad", radius: 42 },
+      { ...makeTowerSlot([820, 666], "校史馆", false), marker: "mapPad", radius: 42 },
     ],
   },
   {
