@@ -147,8 +147,16 @@ function updateSpawning(dt) {
 
 function currentHpGrowth() {
   const wave = Math.max(0, state.wave - 1);
-  const late = Math.max(0, state.wave - 8);
-  return 1 + wave * (state.difficulty?.hpGrowth || 0) + late * late * (state.difficulty?.hpLateGrowth || 0);
+  const lateStart = Number.isFinite(state.difficulty?.hpLateStart) ? state.difficulty.hpLateStart : 8;
+  const late = Math.max(0, state.wave - lateStart);
+  let growth = 1 + wave * (state.difficulty?.hpGrowth || 0) + late * late * (state.difficulty?.hpLateGrowth || 0);
+  if (!state.difficulty?.endless && Number.isFinite(state.difficulty?.finalWaveHpScale) && state.maxWaves > 1) {
+    const progress = Math.max(0, Math.min(1, (state.wave - 1) / (state.maxWaves - 1)));
+    const curve = Number.isFinite(state.difficulty?.finalWaveHpCurve) ? state.difficulty.finalWaveHpCurve : 2;
+    const targetGrowth = state.difficulty.finalWaveHpScale / (state.difficulty?.enemyHp || 1);
+    growth = Math.max(growth, 1 + (targetGrowth - 1) * Math.pow(progress, curve));
+  }
+  return growth;
 }
 
 function currentSpeedGrowth() {
